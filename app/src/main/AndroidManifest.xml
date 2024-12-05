@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+<!--    разрешения (permission) для запросов в сеть (за переделы устройства)-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+
+    <!--                               android:allowBackup="true"     -->
+    <!--    Приложения, ориентированные на Android 6.0 (уровень API 23) или выше, автоматически-->
+    <!--    участвуют в Auto Backup. В файле манифеста приложения задайте логическое значение -->
+    <!--    android:allowBackup для включения или отключения резервного копирования.
+    https://developer.android.com/identity/data/autobackup
+    -->
+
+<!--                                  android:usesCleartextTraffic    -->
+<!--    Указывает, собирается ли приложение использовать сетевой трафик с открытым текстом, например, -->
+<!--    HTTP с открытым текстом. Значение по умолчанию для приложений, нацеленных на API уровня 27 -->
+<!--    или ниже, — "true". Приложения, нацеленные на API уровня 28 или выше, по умолчанию — "false".
+https://developer.android.com/guide/topics/manifest/application-element#usesCleartextTraffic
+-->
+
+<!--                                   android:supportsRtl="true      -->
+<!--    Виджеты главного экрана поддерживают направление текста справа налево, если соответствующие -->
+<!--    файлы манифеста включают назначение атрибута android:supportsRtl="true".
+https://developer.android.com/training/basics/supporting-devices/languages
+-->
+
+<!--    usesCleartextTraffic - механизм плэйс-холдера (manifestPlaceholders) для релизной
+сборки проекта и отладки
+https://developer.android.com/build/manage-manifests
+-->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="${usesCleartextTraffic}">
+        <activity
+            android:name=".activity.AppActivity"
+            android:exported="true">
+            <nav-graph android:value="@navigation/nav_main" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".service.FCMService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>
