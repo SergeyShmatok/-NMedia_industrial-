@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -38,15 +37,13 @@ class NewPostFragment : Fragment() {
         binding.ok.setOnClickListener {
             viewModel.changeContent(binding.edit.text.toString())
             viewModel.save()
-            if (viewModel.data.value?.postIsAdded == false) {
-                Toast.makeText(requireActivity(), "Пост не добавился," +
-                        " попробуйте позже или обратитесь в поддержку", Toast.LENGTH_LONG).show()
-            }
+//            Thread.sleep(200)
+//            viewModel.loadPosts()
+//            findNavController().navigateUp()
             AndroidUtils.hideKeyboard(requireView())
         }
 
         viewModel.postCreated.observe(viewLifecycleOwner) {
-            //Thread.sleep(200)
             viewModel.loadPosts()
             findNavController().navigateUp()
         }
