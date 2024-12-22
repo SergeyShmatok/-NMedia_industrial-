@@ -41,6 +41,7 @@ class PostRepositoryImpl : PostRepositoryFun {
         return client.newCall(request)
             .enqueue(object : Callback {
                 override fun onResponse(call: Call, response: Response) {
+
                     try {
                         callback.onSuccess(gson.fromJson(response.body?.string(), typeToken1.type))
                     } catch (e: Exception) {
@@ -65,7 +66,11 @@ class PostRepositoryImpl : PostRepositoryFun {
         return client.newCall(request)
             .enqueue(object : Callback {
                 override fun onResponse(call: Call, response: Response) {
-
+                    try {
+                        callback.onSuccess(gson.fromJson(response.body?.string(), typeToken2.type))
+                    } catch (e: Exception) {
+                        callback.onError(e)
+                    }
                 }
                 override fun onFailure(call: Call, e: IOException) {
                     callback.onError(e)
@@ -122,7 +127,7 @@ class PostRepositoryImpl : PostRepositoryFun {
     }
 
 
-    override fun removeById(id: Long, callback: NMediaCallback<Post>) {
+    override fun removeById(id: Long, callback: NMediaCallback<Unit>) {
         val request: Request = Request.Builder()
             .delete()
             .url("${BASE_URL}/api/slow/posts/$id")
@@ -132,7 +137,7 @@ class PostRepositoryImpl : PostRepositoryFun {
             .enqueue(object : Callback {
                 override fun onResponse(call: Call, response: Response) {
                     try {
-                        callback.onSuccess(gson.fromJson(response.body?.string(), typeToken2.type))
+                        callback.onSuccess(data = Unit)
                     } catch (e: Exception) {
                         callback.onError(e)
                     }

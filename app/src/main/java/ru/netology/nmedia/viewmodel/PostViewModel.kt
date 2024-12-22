@@ -55,7 +55,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value?.let {
 
             repository.save(it, object : NMediaCallback<Post> {
-                override fun onSuccess(data: Post) {}
+                override fun onSuccess(data: Post) {
+                    _data.postValue(FeedModel(postIsAdded = true))
+                    _postCreated.postValue(Unit)
+
+                }
 
                 override fun onError(e: Exception) {
                     _data.postValue(FeedModel(postIsAdded = false))
@@ -63,7 +67,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
             }
             )
-            _postCreated.postValue(Unit)
 
         }
         edited.value = empty
@@ -73,7 +76,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun likeById(id: Long) {
 
         repository.likeById(id, object : NMediaCallback<Post> {
-            val old = _data.value?.posts.orEmpty()
+
+            //val old = _data.value?.posts.orEmpty()
+
 
             override fun onSuccess(data: Post) {
                 _data.postValue(
@@ -82,8 +87,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
 
+
             override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(posts = old))
+                _data.postValue(FeedModel(error = true))
+
             }
 
         }
@@ -91,10 +98,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
+
     fun removeLike(id: Long) {
 
-        repository.removeById(id, object : NMediaCallback<Post> {
-            val old = _data.value?.posts.orEmpty()
+        repository.removeLike(id, object : NMediaCallback<Post> {
+
+            //val old = _data.value?.posts.orEmpty()
 
             override fun onSuccess(data: Post) {
                 _data.postValue(
@@ -104,7 +113,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(posts = old))
+                _data.postValue(FeedModel(error = true))
             }
 
         }
@@ -113,19 +122,19 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun removeById(id: Long) {
-        repository.removeById(id, object : NMediaCallback<Post> {
+        repository.removeById(id, object : NMediaCallback<Unit> {
             val old = _data.value?.posts.orEmpty()
 
-            override fun onSuccess(data: Post) {
+            override fun onSuccess(data: Unit) {
                 _data.postValue(
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .filter { it.id != id }
-                    )
-                )
+                    ))
             }
 
             override fun onError(e: Exception) {
                 _data.postValue(_data.value?.copy(posts = old))
+
             }
 
         })
@@ -215,3 +224,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //
 //
 //        }
+
+
+//                _data.postValue(_data.value?.copy(posts = old
+//                    .map { post -> if (post.id != id) post else post.apply { likedByMe != likedByMe }
+//                    }))
