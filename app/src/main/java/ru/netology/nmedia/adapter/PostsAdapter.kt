@@ -1,6 +1,7 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
@@ -9,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.util.loadAttachments
+import ru.netology.nmedia.util.loadAvatars
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -31,6 +34,9 @@ class PostsAdapter(
     }
 }
 
+private const val AVATARS_URL = "http://10.0.2.2:9999/avatars/"
+private const val ATTACHMENT_URL = "http://10.0.2.2:9999/images/"
+
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
@@ -45,6 +51,15 @@ class PostViewHolder(
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
+            avatar.loadAvatars("${AVATARS_URL}${post.authorAvatar}")
+
+            if (post.attachment != null) attachment.apply {
+                loadAttachments("${ATTACHMENT_URL}${post.attachment?.url}")
+                contentDescription = post.attachment?.description
+                visibility = View.VISIBLE }
+                else attachment.visibility = View.GONE
+
+
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
@@ -54,6 +69,7 @@ class PostViewHolder(
                                 onInteractionListener.onRemove(post)
                                 true
                             }
+
                             R.id.edit -> {
                                 onInteractionListener.onEdit(post)
                                 true

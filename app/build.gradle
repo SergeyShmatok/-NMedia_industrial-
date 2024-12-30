@@ -79,6 +79,8 @@ dependencies {
     implementation libs.okhttp
     implementation libs.play.services.base
     implementation libs.androidx.swiperefreshlayout
+    implementation libs.glide
+    implementation libs.picasso
 
 
     testImplementation libs.junit
