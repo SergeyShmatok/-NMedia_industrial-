@@ -35,7 +35,7 @@ class PostsAdapter(
 }
 
 private const val AVATARS_URL = "http://10.0.2.2:9999/avatars/"
-private const val ATTACHMENT_URL = "http://10.0.2.2:9999/images/"
+private const val ATTACHMENTS_URL = "http://10.0.2.2:9999/images/"
 
 class PostViewHolder(
     private val binding: CardPostBinding,
@@ -54,7 +54,7 @@ class PostViewHolder(
             avatar.loadAvatars("${AVATARS_URL}${post.authorAvatar}")
 
             if (post.attachment != null) attachment.apply {
-                loadAttachments("${ATTACHMENT_URL}${post.attachment?.url}")
+                loadAttachments("${ATTACHMENTS_URL}${post.attachment?.url}")
                 contentDescription = post.attachment?.description
                 visibility = View.VISIBLE }
                 else attachment.visibility = View.GONE

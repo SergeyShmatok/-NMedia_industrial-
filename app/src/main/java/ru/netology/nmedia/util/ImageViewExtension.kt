@@ -20,6 +20,8 @@ fun ImageView.loadAttachments(url:String) {
         .load(url)
         .error(R.drawable.ic_error_for_attachments_1450dp)
         .placeholder(R.drawable.ic_loading_for_attachments_1450dp)
+        .dontAnimate()
+        .dontTransform()
         .timeout(30_000)
         .into(this)
 }

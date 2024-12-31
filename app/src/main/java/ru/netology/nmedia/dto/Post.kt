@@ -1,7 +1,5 @@
 package ru.netology.nmedia.dto
 
-import android.view.View
-
 data class Post(
     val id: Long,
     val author: String,

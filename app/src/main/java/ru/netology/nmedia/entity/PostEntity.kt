@@ -17,7 +17,7 @@ data class PostEntity(
 ) {
     fun toDto() = Post(
         id, author, content, published, likedByMe, likes,
-        authorAvatar = TODO()
+        authorAvatar = "",
     )
 
     companion object {
