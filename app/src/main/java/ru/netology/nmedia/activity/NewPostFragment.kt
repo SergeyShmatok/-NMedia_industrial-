@@ -39,8 +39,8 @@ class NewPostFragment : Fragment() {
             viewModel.changeContent(binding.edit.text.toString())
             viewModel.save()
             if (viewModel.data.value?.postIsAdded == false) {
-                Toast.makeText(requireActivity(), "Пост не добавился," +
-                        " попробуйте позже или обратитесь в поддержку", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireActivity(), "Пост не добавился, " +
+                        "попробуйте позже или обратитесь в поддержку", Toast.LENGTH_LONG).show()
             }
             AndroidUtils.hideKeyboard(requireView())
         }

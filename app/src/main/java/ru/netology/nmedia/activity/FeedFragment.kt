@@ -37,11 +37,18 @@ class FeedFragment : Fragment() {
             override fun onLike(post: Post) {
                 if (!post.likedByMe) viewModel.likeById(post.id)
                 else viewModel.removeLike(post.id)
+                if (viewModel.data.value?.likeError == true) {
+                    Toast.makeText(requireActivity(), "Что-то пошло не так ( " +
+                            "попробуйте позже.", Toast.LENGTH_LONG).show()
+                }
+
             }
 
             override fun onRemove(post: Post) {
                 viewModel.removeById(post.id)
+
             }
+
 
             override fun onShare(post: Post) {
                 val intent = Intent().apply {

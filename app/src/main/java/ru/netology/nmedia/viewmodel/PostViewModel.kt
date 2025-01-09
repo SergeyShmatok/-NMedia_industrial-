@@ -35,21 +35,18 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadPosts() {
-        // thread { - убираем thread, потому что многопоточность теперь будет происходить на стороне OkHttp.
-        // Начинаем загрузку
-        _data.postValue(FeedModel(loading = true))
+        _data.value = (FeedModel(loading = true))
 
         repository.getAllAsync(object : NMediaCallback<List<Post>> {
             override fun onSuccess(data: List<Post>) {
-                _data.postValue(FeedModel(posts = data, empty = data.isEmpty()))
+                _data.value = (FeedModel(posts = data, empty = data.isEmpty()))
             }
 
             override fun onError(e: Exception) {
                 _data.postValue(FeedModel(error = true))
             }
 
-        }
-        )
+        })
 
     }
 
@@ -58,17 +55,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
             repository.save(it, object : NMediaCallback<Post> {
                 override fun onSuccess(data: Post) {
-                    _data.postValue(FeedModel(postIsAdded = true))
-                    _postCreated.postValue(Unit)
-
+                    _postCreated.value = Unit
+                    _data.value = (FeedModel(postIsAdded = true))
                 }
 
                 override fun onError(e: Exception) {
                     _data.postValue(FeedModel(postIsAdded = false))
                 }
 
-            }
-            )
+            })
 
         }
         edited.value = empty
@@ -81,22 +76,19 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
             //val old = _data.value?.posts.orEmpty()
 
-
             override fun onSuccess(data: Post) {
-                _data.postValue(
+                _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .map { post -> if (post.id != id) post else data })
                 )
-            }
+                _data.value = (FeedModel(likeError = false))
 
+            }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
-
+                _data.postValue(FeedModel(likeError = true))
             }
-
-        }
-        )
+        })
 
     }
 
@@ -108,37 +100,36 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             //val old = _data.value?.posts.orEmpty()
 
             override fun onSuccess(data: Post) {
-                _data.postValue(
+                _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .map { post -> if (post.id != id) post else data })
                 )
+                _data.value = (FeedModel(likeError = false))
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+                _data.postValue(FeedModel(likeError = true))
             }
-
-        }
-        )
+        })
 
     }
 
     fun removeById(id: Long) {
         repository.removeById(id, object : NMediaCallback<Unit> {
-            val old = _data.value?.posts.orEmpty()
+
+            //val old = _data.value?.posts.orEmpty()
 
             override fun onSuccess(data: Unit) {
-                _data.postValue(
+                _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .filter { it.id != id }
                     ))
+                _data.value = (FeedModel(postIsDeleted = true))
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(posts = old))
-
+                _data.postValue(FeedModel(postIsDeleted = false))
             }
-
         })
 
     }
@@ -157,7 +148,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 }
 
-//                      функция loadPosts реализованная через threads в прошлый раз
+//                      функция loadPosts реализованная через threads
 //        try {
 //            // Данные успешно получены
 //            val posts = repository.getAll()
