@@ -9,6 +9,8 @@ data class FeedModel(
     val empty: Boolean = false,
     val refreshing: Boolean = false,
     val postIsAdded: Boolean = true,
-    val likeError: Boolean = true,
+    val likeError: Boolean = false,
     val postIsDeleted: Boolean = true,
 )
+
+

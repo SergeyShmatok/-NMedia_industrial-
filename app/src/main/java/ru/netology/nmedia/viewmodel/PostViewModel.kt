@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.*
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
@@ -50,26 +51,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun save() {
-        edited.value?.let {
-
-            repository.save(it, object : NMediaCallback<Post> {
-                override fun onSuccess(data: Post) {
-                    _postCreated.value = Unit
-                    _data.value = (FeedModel(postIsAdded = true))
-                }
-
-                override fun onError(e: Exception) {
-                    _data.postValue(FeedModel(postIsAdded = false))
-                }
-
-            })
-
-        }
-        edited.value = empty
-    }
-
-
     fun likeById(id: Long) {
 
         repository.likeById(id, object : NMediaCallback<Post> {
@@ -79,19 +60,27 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             override fun onSuccess(data: Post) {
                 _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                        .map { post -> if (post.id != id) post else data })
+                        .map { post -> if (post.id != id) post else data }, likeError = false)
                 )
-                _data.value = (FeedModel(likeError = false))
 
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(likeError = true))
+                _data.postValue(_data.value?.copy(likeError = true))
+
             }
         })
 
     }
 
+    fun likeErrorIsFalse() {
+        _data.postValue(_data.value?.copy(likeError = false))
+    }
+
+
+    fun toastFun(text: String) {
+        Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
+    }
 
     fun removeLike(id: Long) {
 
@@ -102,13 +91,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             override fun onSuccess(data: Post) {
                 _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                        .map { post -> if (post.id != id) post else data })
+                        .map { post -> if (post.id != id) post else data }, likeError = false)
                 )
-                _data.value = (FeedModel(likeError = false))
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(likeError = true))
+                _data.postValue(_data.value?.copy(likeError = true))
             }
         })
 
@@ -122,17 +110,46 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             override fun onSuccess(data: Unit) {
                 _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                        .filter { it.id != id }
-                    ))
-                _data.value = (FeedModel(postIsDeleted = true))
+                        .filter { it.id != id }, postIsDeleted = true)
+                        )
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(postIsDeleted = false))
+                _data.postValue(_data.value?.copy(postIsDeleted = false))
             }
         })
 
     }
+
+    fun postDelIsTrue() {
+        _data.postValue(_data.value?.copy(postIsDeleted = true))
+    }
+
+
+    fun save() {
+        edited.value?.let {
+
+            repository.save(it, object : NMediaCallback<Post> {
+                override fun onSuccess(data: Post) {
+                    _postCreated.value = Unit
+                    _data.value = _data.value?.copy(postIsAdded = true)
+                }
+
+                override fun onError(e: Exception) {
+                    _data.postValue(_data.value?.copy(postIsAdded = false))
+                }
+
+            })
+
+        }
+        edited.value = empty
+    }
+
+    fun postIsAddedTrue() {
+        _data.postValue(_data.value?.copy(postIsAdded = true))
+    }
+
+
 
     fun edit(post: Post) {
         edited.value = post

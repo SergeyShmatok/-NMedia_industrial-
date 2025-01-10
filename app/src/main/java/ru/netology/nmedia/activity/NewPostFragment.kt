@@ -38,17 +38,19 @@ class NewPostFragment : Fragment() {
         binding.ok.setOnClickListener {
             viewModel.changeContent(binding.edit.text.toString())
             viewModel.save()
-            if (viewModel.data.value?.postIsAdded == false) {
-                Toast.makeText(requireActivity(), "Пост не добавился, " +
-                        "попробуйте позже или обратитесь в поддержку", Toast.LENGTH_LONG).show()
-            }
             AndroidUtils.hideKeyboard(requireView())
         }
 
         viewModel.postCreated.observe(viewLifecycleOwner) {
-            //Thread.sleep(200)
             viewModel.loadPosts()
             findNavController().navigateUp()
+        }
+
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            if (!state.postIsAdded) {
+                viewModel.toastFun("Что-то пошло нет так :(")
+                viewModel.postIsAddedTrue()
+            }
         }
 
         return binding.root

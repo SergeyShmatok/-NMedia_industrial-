@@ -37,16 +37,10 @@ class FeedFragment : Fragment() {
             override fun onLike(post: Post) {
                 if (!post.likedByMe) viewModel.likeById(post.id)
                 else viewModel.removeLike(post.id)
-                if (viewModel.data.value?.likeError == true) {
-                    Toast.makeText(requireActivity(), "Что-то пошло не так ( " +
-                            "попробуйте позже.", Toast.LENGTH_LONG).show()
-                }
-
             }
 
             override fun onRemove(post: Post) {
                 viewModel.removeById(post.id)
-
             }
 
 
@@ -67,28 +61,38 @@ class FeedFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts) // это про передачу постов в рисайклер
-            binding.progress.isVisible = state.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
+            binding.progress.isVisible =
+                state.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
             binding.errorGroup.isVisible = state.error // --//--
             binding.emptyText.isVisible = state.empty // --//--
+
+            if (state.likeError) {
+                viewModel.toastFun("Ошибка :(")
+                viewModel.likeErrorIsFalse()
+            }
+                if (!state.postIsDeleted) {
+                    viewModel.toastFun("Не удалилось, попробуйте снова.")
+                    viewModel.postDelIsTrue()
+                }
+            }
+
+
+            binding.swiperefresh.setOnRefreshListener {
+                Toast.makeText(requireActivity(), "Data Refreshed", Toast.LENGTH_LONG).show()
+                viewModel.loadPosts()
+                binding.swiperefresh.isRefreshing = false
+
+            }
+
+
+            binding.retryButton.setOnClickListener {
+                viewModel.loadPosts()
+            }
+
+            binding.fab.setOnClickListener {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            }
+
+            return binding.root
         }
-
-
-        binding.swiperefresh.setOnRefreshListener {
-            Toast.makeText(requireActivity(), "Data Refreshed", Toast.LENGTH_LONG).show()
-            viewModel.loadPosts()
-            binding.swiperefresh.isRefreshing = false
-
-        }
-
-
-        binding.retryButton.setOnClickListener {
-            viewModel.loadPosts()
-        }
-
-        binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-        }
-
-        return binding.root
     }
-}
