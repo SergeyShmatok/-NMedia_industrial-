@@ -47,10 +47,9 @@ class PostViewHolder(
             author.text = post.author
             published.text = post.published
             content.text = post.content
-            // в адаптере
+
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
-
             avatar.loadAvatars("${AVATARS_URL}${post.authorAvatar}")
 
             if (post.attachment != null) attachment.apply {

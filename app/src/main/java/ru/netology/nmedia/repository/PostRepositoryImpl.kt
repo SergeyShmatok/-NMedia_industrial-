@@ -10,101 +10,74 @@ import java.io.IOException
 
 class PostRepositoryImpl : PostRepositoryFun {
 
+
+    private fun <T> objCallback(callback: NMediaCallback<T>) = object : Callback<T> {
+        override fun onResponse(call: Call<T>, response: Response<T>) {
+            val body = response.body() ?: run {
+                callback.onError(RuntimeException("body is null"))
+                return
+            }
+            if (response.isSuccessful)
+                callback.onSuccess(body)
+            else
+                callback.onError(RuntimeException("Unsuccessful response from the server"))
+        }
+
+        override fun onFailure(call: Call<T>, e: Throwable) {
+            callback.onError(IOException(e))
+        }
+
+    }
+
+
     override fun getAllAsync(callback: NMediaCallback<List<Post>>) {
-        PostApi.service.getAll().enqueue(object : Callback<List<Post>> {
-            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
-                println(Thread.currentThread().name) // (!)
-                // Вывод в консоль имени текущего потока (onResponse),
-                // ответ будет: main.
-                // Т.е. мы можем работать от сюда как из главного потока (postValue в дальнейшем можно не писать).
-                // По архитектуре это влияет так, что из главного потока мы, например, не можем обратиться к серверу,
-                // но можем обратиться к элементам интерфейса.
-                if (response.isSuccessful)
-                    callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-                else
-                    callback.onError(RuntimeException("Unsuccessful response from the server"))
-            }
-
-            override fun onFailure(call: Call<List<Post>>, e: Throwable) {
-                callback.onError(IOException(e))
-            }
-        })
-
+        PostApi.service.getAll().enqueue(objCallback(callback))
     }
 
     override fun save(post: Post, callback: NMediaCallback<Post>) {
-        PostApi.service.save(post).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-
-                if (response.isSuccessful)
-                    callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-                else
-                    callback.onError(RuntimeException("Unsuccessful response from the server"))
-            }
-
-            override fun onFailure(call: Call<Post>, e: Throwable) {
-                callback.onError(IOException(e))
-            }
-        })
-
+        PostApi.service.save(post).enqueue(objCallback(callback))
     }
 
     override fun likeById(id: Long, callback: NMediaCallback<Post>) {
-        PostApi.service.likeById(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-
-                if (response.isSuccessful)
-                    callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-                else
-                    callback.onError(RuntimeException("Unsuccessful response from the server"))
-            }
-
-            override fun onFailure(call: Call<Post>, e: Throwable) {
-                callback.onError(IOException(e))
-            }
-        })
-
+        PostApi.service.likeById(id).enqueue(objCallback(callback))
     }
-
 
     override fun removeLike(id: Long, callback: NMediaCallback<Post>) {
-        PostApi.service.removeLike(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-
-                if (response.isSuccessful)
-                    callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-                else
-                    callback.onError(RuntimeException("Unsuccessful response from the server"))
-            }
-
-            override fun onFailure(call: Call<Post>, e: Throwable) {
-                callback.onError(IOException(e))
-            }
-        })
+        PostApi.service.removeLike(id).enqueue(objCallback(callback))
 
     }
 
-
     override fun removeById(id: Long, callback: NMediaCallback<Unit>) {
-        PostApi.service.removeById(id).enqueue(object : Callback<Unit> {
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-
-                if (response.isSuccessful)
-                    callback.onSuccess(data = Unit)
-                else
-                    callback.onError(RuntimeException("Unsuccessful response from the server"))
-            }
-
-            override fun onFailure(call: Call<Unit>, e: Throwable) {
-                callback.onError(IOException(e))
-            }
-        })
-
+        PostApi.service.removeById(id).enqueue(objCallback(callback))
     }
 
 
 }
 
+
+//--------------------------------------------------------------------------------------------------
+
+//    println(Thread.currentThread().name) // (!)
+//    // Вывод в консоль имени текущего потока (onResponse),
+//    // ответ будет: main.
+//    // Т.е. мы можем работать от сюда как из главного потока (postValue в дальнейшем можно не писать).
+//    // По архитектуре это влияет так, что из главного потока мы, например, не можем обратиться к серверу,
+//    // но можем обратиться к элементам интерфейса.
+
+//--------------------------------------------------------------------------------------------------
+//
+//    private fun <T> forOnResponse(response: Response<T>, callback: NMediaCallback<T>) {
+//        // Эта функция только для сокращения кода в onRespons'ах (!)
+//        val body = response.body() ?: run {
+//            callback.onError(RuntimeException("body is null"))
+//            return
+//        }
+//        if (response.isSuccessful)
+//            callback.onSuccess(body)
+//        else
+//            callback.onError(RuntimeException("Unsuccessful response from the server"))
+//    }
+//
 //--------------------------------------------------------------------------------------------------
 //
 //                               - Old code (OkHttp-implementation) -
@@ -261,3 +234,16 @@ class PostRepositoryImpl : PostRepositoryFun {
 //    }
 //
 //-------------------------------------END
+
+//            - Версия с "parse" c передачей функционального типа -
+//    private fun <T> forOnResponseFun (response: Response<T>, callback: NMediaCallback<T>, parse: (T) -> T) {
+//        // Эта функция только для сокращения кода
+//        val body = response.body() ?: run {
+//            callback.onError(RuntimeException("body is null"))
+//            return }
+//        if (response.isSuccessful)
+//            callback.onSuccess(parse(body))
+//        else
+//            callback.onError(RuntimeException("Unsuccessful response from the server"))
+//    }
+//

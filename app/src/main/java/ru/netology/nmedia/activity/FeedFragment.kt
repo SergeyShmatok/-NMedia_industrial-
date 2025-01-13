@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -61,24 +60,23 @@ class FeedFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts) // это про передачу постов в рисайклер
-            binding.progress.isVisible =
-                state.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
+            binding.progress.isVisible = state.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
             binding.errorGroup.isVisible = state.error // --//--
             binding.emptyText.isVisible = state.empty // --//--
 
             if (state.likeError) {
-                viewModel.toastFun("Ошибка :(")
+                viewModel.toastFun()
                 viewModel.likeErrorIsFalse()
             }
                 if (!state.postIsDeleted) {
-                    viewModel.toastFun("Не удалилось, попробуйте снова.")
+                    viewModel.toastFun()
                     viewModel.postDelIsTrue()
                 }
             }
 
 
             binding.swiperefresh.setOnRefreshListener {
-                Toast.makeText(requireActivity(), "Data Refreshed", Toast.LENGTH_LONG).show()
+                viewModel.toastFun(true)
                 viewModel.loadPosts()
                 binding.swiperefresh.isRefreshing = false
 

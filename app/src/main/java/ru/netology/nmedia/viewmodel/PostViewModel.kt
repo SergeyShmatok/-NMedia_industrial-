@@ -20,8 +20,8 @@ private val empty = Post(
     attachment = null,
 )
 
+// @Deprecated(message = "Не использовать", replaceWith = ReplaceWith...) (Из вебинара)
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-    // упрощённый вариант
     private val repository: PostRepositoryFun = PostRepositoryImpl()
     private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel>
@@ -30,6 +30,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
+//--------------------------------------------------------------------------------------------------
 
     init {
         loadPosts()
@@ -51,56 +53,68 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
+//--------------------------------------------------------------------------------------------------
+
     fun likeById(id: Long) {
 
-        repository.likeById(id, object : NMediaCallback<Post> {
+        //val old = _data.value?.posts.orEmpty()
 
-            //val old = _data.value?.posts.orEmpty()
+        repository.likeById(id, object : NMediaCallback<Post> {
 
             override fun onSuccess(data: Post) {
                 _data.value = (
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .map { post -> if (post.id != id) post else data }, likeError = false)
                 )
+//                        Решение из разборного вебинара (без моего likeError):
+//                        _data.value = ( _data.value?.copy(posts = _data.value?.posts.orEmpty()
+//                                        .map { post -> if (post.id != id) post else it.copy(
+//                                    likeByMe = !it.likedByMe,
+//                                    likes = if (it.likedByMe) it.likes - 1 else it.likes + 1) } )
+//                                )
 
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(likeError = true))
+
+                _data.value = (_data.value?.copy(likeError = true))
 
             }
         })
 
     }
+
+//--------------------------------------------------------------------------------------------------
 
     fun likeErrorIsFalse() {
         _data.postValue(_data.value?.copy(likeError = false))
     }
 
-
-    fun toastFun(text: String) {
-        Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
-    }
+//--------------------------------------------------------------------------------------------------
 
     fun removeLike(id: Long) {
 
-        repository.removeLike(id, object : NMediaCallback<Post> {
+        //val old = _data.value?.posts.orEmpty()
 
-            //val old = _data.value?.posts.orEmpty()
+        repository.removeLike(id, object : NMediaCallback<Post> {
 
             override fun onSuccess(data: Post) {
                 _data.value = (
-                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                        .map { post -> if (post.id != id) post else data }, likeError = false)
-                )
+                        _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                            .map { post -> if (post.id != id) post else data }, likeError = false)
+                        )
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(likeError = true))
+
+                _data.value = (_data.value?.copy(likeError = true))
+
             }
         })
 
     }
+
+//--------------------------------------------------------------------------------------------------
 
     fun removeById(id: Long) {
         repository.removeById(id, object : NMediaCallback<Unit> {
@@ -121,10 +135,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
+//--------------------------------------------------------------------------------------------------
+
     fun postDelIsTrue() {
         _data.postValue(_data.value?.copy(postIsDeleted = true))
     }
 
+//--------------------------------------------------------------------------------------------------
 
     fun save() {
         edited.value?.let {
@@ -137,6 +154,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
                 override fun onError(e: Exception) {
                     _data.postValue(_data.value?.copy(postIsAdded = false))
+                    // Можно создать SingleLiveEvent и отсюда менять его состояние. (Из вебинара)
                 }
 
             })
@@ -145,11 +163,28 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = empty
     }
 
+//--------------------------------------------------------------------------------------------------
+
     fun postIsAddedTrue() {
         _data.postValue(_data.value?.copy(postIsAdded = true))
     }
 
+//--------------------------------------------------------------------------------------------------
 
+    fun toastFun(refreshed: Boolean = false) {
+        val refreshedPhrase = "Data Refreshed"
+        val phrase = listOf(
+            "Не удалось, попробуйте снова.",
+            "Ошибка :(",
+            "Что-то пошло нет так..",
+            "Нет связи, попробуйте через 5 секунд.",
+        )
+        val randomPhrase = phrase.random()
+        val text = if (!refreshed) randomPhrase else refreshedPhrase
+        Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
+    }
+
+//--------------------------------------------------------------------------------------------------
 
     fun edit(post: Post) {
         edited.value = post
@@ -160,10 +195,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         if (edited.value?.content == text) {
             return
         }
+
         edited.value = edited.value?.copy(content = text)
     }
-
 }
+
+//------------------------------------- End
+
 
 //                      функция loadPosts реализованная через threads
 //        try {
