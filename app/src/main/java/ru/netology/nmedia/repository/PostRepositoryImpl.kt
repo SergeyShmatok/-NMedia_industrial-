@@ -12,6 +12,7 @@ class PostRepositoryImpl : PostRepositoryFun {
 
 
     private fun <T> objCallback(callback: NMediaCallback<T>) = object : Callback<T> {
+
         override fun onResponse(call: Call<T>, response: Response<T>) {
             val body = response.body() ?: run {
                 callback.onError(RuntimeException("body is null"))
@@ -29,7 +30,6 @@ class PostRepositoryImpl : PostRepositoryFun {
 
     }
 
-
     override fun getAllAsync(callback: NMediaCallback<List<Post>>) {
         PostApi.service.getAll().enqueue(objCallback(callback))
     }
@@ -41,7 +41,24 @@ class PostRepositoryImpl : PostRepositoryFun {
     override fun likeById(id: Long, callback: NMediaCallback<Post>) {
         PostApi.service.likeById(id).enqueue(objCallback(callback))
     }
-
+//            object : Callback<Post> {
+//            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+//                val body = response.body() ?: run {
+//                    callback.onError(RuntimeException("body is null"))
+//                    return
+//                }
+//                if (response.isSuccessful)
+//                    callback.onSuccess(body)
+//                else
+//                    callback.onError(RuntimeException("Unsuccessful response from the server"))
+//            }
+//
+//            override fun onFailure(call: Call<Post>, e: Throwable) {
+//                callback.onError(IOException(e))
+//            })
+//        }
+//
+//    }
     override fun removeLike(id: Long, callback: NMediaCallback<Post>) {
         PostApi.service.removeLike(id).enqueue(objCallback(callback))
 
@@ -50,7 +67,6 @@ class PostRepositoryImpl : PostRepositoryFun {
     override fun removeById(id: Long, callback: NMediaCallback<Unit>) {
         PostApi.service.removeById(id).enqueue(objCallback(callback))
     }
-
 
 }
 

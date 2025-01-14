@@ -32,6 +32,7 @@ class PostsAdapter(
         val post = getItem(position)
         holder.bind(post)
     }
+
 }
 
 private const val AVATARS_URL = "http://10.0.2.2:9999/avatars/"

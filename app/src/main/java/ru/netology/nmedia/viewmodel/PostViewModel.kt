@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.view.Gravity
 import android.widget.Toast
 import androidx.lifecycle.*
 import ru.netology.nmedia.dto.Post
@@ -57,27 +58,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun likeById(id: Long) {
 
-        //val old = _data.value?.posts.orEmpty()
+        val old = _data.value?.posts.orEmpty()
+
+        _data.value = (
+                _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                    .map { post -> if (post.id != id) post else post.copy(
+                        likedByMe = !post.likedByMe,
+                        likes = post.likes + 1)}, likeError = false)
+                   )
 
         repository.likeById(id, object : NMediaCallback<Post> {
 
-            override fun onSuccess(data: Post) {
-                _data.value = (
-                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                        .map { post -> if (post.id != id) post else data }, likeError = false)
-                )
-//                        Решение из разборного вебинара (без моего likeError):
-//                        _data.value = ( _data.value?.copy(posts = _data.value?.posts.orEmpty()
-//                                        .map { post -> if (post.id != id) post else it.copy(
-//                                    likeByMe = !it.likedByMe,
-//                                    likes = if (it.likedByMe) it.likes - 1 else it.likes + 1) } )
-//                                )
-
-            }
+            override fun onSuccess(data: Post) {}
 
             override fun onError(e: Exception) {
 
-                _data.value = (_data.value?.copy(likeError = true))
+                _data.value = _data.value?.copy(posts = old, likeError = true)
 
             }
         })
@@ -94,20 +90,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun removeLike(id: Long) {
 
-        //val old = _data.value?.posts.orEmpty()
+        val old = _data.value?.posts.orEmpty()
+
+        _data.value = (
+                _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                    .map { post -> if (post.id != id) post else post.copy(
+                        likedByMe = !post.likedByMe,
+                        likes = post.likes - 1)}, likeError = false)
+                )
 
         repository.removeLike(id, object : NMediaCallback<Post> {
 
-            override fun onSuccess(data: Post) {
-                _data.value = (
-                        _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                            .map { post -> if (post.id != id) post else data }, likeError = false)
-                        )
-            }
+            override fun onSuccess(data: Post) {}
 
             override fun onError(e: Exception) {
 
-                _data.value = (_data.value?.copy(likeError = true))
+                _data.value = _data.value?.copy(posts = old, likeError = true)
 
             }
         })
@@ -174,10 +172,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun toastFun(refreshed: Boolean = false) {
         val refreshedPhrase = "Data Refreshed"
         val phrase = listOf(
-            "Не удалось, попробуйте снова.",
+            "Не удалось, попробуйте позже",
             "Ошибка :(",
-            "Что-то пошло нет так..",
-            "Нет связи, попробуйте через 5 секунд.",
+            "Что-то пошло нет так..попробуйте снова",
+            "Нет связи с сервером",
         )
         val randomPhrase = phrase.random()
         val text = if (!refreshed) randomPhrase else refreshedPhrase
@@ -200,7 +198,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 }
 
-//------------------------------------- End
+//------------------------------------ End
 
 
 //                      функция loadPosts реализованная через threads
