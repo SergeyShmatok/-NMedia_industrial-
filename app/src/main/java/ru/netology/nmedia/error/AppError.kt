@@ -1,6 +1,6 @@
 package ru.netology.nmedia.error
 
-sealed class AppError(): RuntimeException()
+sealed class AppError: RuntimeException()
 
 // sealed классы в явном виде перечисляют классы, которым разрешено быть
 // их дочерними классами. Такой контроль дает нам больше уверенности в том,
