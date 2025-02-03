@@ -51,6 +51,7 @@ class PostViewHolder(
 
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+
             avatar.loadAvatars("${AVATARS_URL}${post.authorAvatar}")
 
             if (post.attachment != null) attachment.apply {

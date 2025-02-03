@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -34,7 +35,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                if (!post.likedByMe) viewModel.likeById(post.id)
+               if (!post.likedByMe) viewModel.likeById(post.id)
                 else viewModel.removeLike(post.id)
             }
 
@@ -60,32 +61,41 @@ class FeedFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts) // это про передачу постов в рисайклер
-            binding.progress.isVisible = state.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
-            binding.errorGroup.isVisible = state.error // --//--
             binding.emptyText.isVisible = state.empty // --//--
+        }
 
-            if (state.likeError) {
+        viewModel.dataState.observe(viewLifecycleOwner) { stateModel ->
+            binding.progress.isVisible = stateModel.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
+            binding.swiperefresh.isRefreshing = stateModel.refreshing // --//--
+
+           if (stateModel.error) {
+               Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_INDEFINITE).
+                       setAction(R.string.retry_loading) {
+                           viewModel.loadPosts()
+                       }.show()
+           }
+
+            if (stateModel.likeError) {
                 viewModel.toastFun()
                 viewModel.likeErrorIsFalse()
             }
-                if (!state.postIsDeleted) {
+
+            if (!stateModel.postIsDeleted) {
                     viewModel.toastFun()
                     viewModel.postDelIsTrue()
                 }
-            }
 
+            }
 
             binding.swiperefresh.setOnRefreshListener {
                 viewModel.toastFun(true)
-                viewModel.loadPosts()
-                binding.swiperefresh.isRefreshing = false
-
+                viewModel.refreshing()
             }
 
 
-            binding.retryButton.setOnClickListener {
-                viewModel.loadPosts()
-            }
+//            binding.retryButton.setOnClickListener {
+//                viewModel.loadPosts()
+//            }
 
             binding.fab.setOnClickListener {
                 findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)

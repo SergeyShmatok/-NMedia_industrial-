@@ -1,22 +1,42 @@
 package ru.netology.nmedia.repository
 
+import androidx.lifecycle.LiveData
 import ru.netology.nmedia.dto.Post
 
 interface PostRepositoryFun {
-    //fun getAll(): List<Post>
-    fun getAllAsync(callback: NMediaCallback<List<Post>>)
-    fun save(post: Post, callback: NMediaCallback<Post>)
+    val data: LiveData<List<Post>>
 
-    fun likeById(id: Long, callback: NMediaCallback<Post>)
-    fun removeById(id: Long, callback: NMediaCallback<Unit>)
-
-    fun removeLike(id: Long, callback: NMediaCallback<Post>)
-
-interface NMediaCallback <T> {
-    fun onSuccess(data: T)
-    fun onError(e: Exception)
-}
+    suspend fun getAll()
+    suspend fun save(post: Post)
+    suspend fun likeById(id: Long)
+    suspend fun removeById(id: Long)
+    suspend fun removeLike(id: Long)
 
 }
+
+//--------------------------------------------------------------------------------------------------
+//                               - Прошлая версия (с коллбэками) -
+//
+// interface PostRepositoryFun {
+//
+//    // fun getAll(): List<Post>
+//    suspend fun getAllAsync(callback: NMediaCallback<List<Post>>)
+//    suspend fun save(post: Post, callback: NMediaCallback<Post>)
+//
+//    suspend fun likeById(id: Long, callback: NMediaCallback<Post>)
+//    suspend fun removeById(id: Long, callback: NMediaCallback<Unit>)
+//
+//    suspend fun removeLike(id: Long, callback: NMediaCallback<Post>)
+//
+//interface NMediaCallback <T> {
+//    fun onSuccess(data: T)
+//    fun onError(e: Exception)
+//  }
+//
+//  С корутинами коллбэки☝️ больше не нужны.
+//}
+//-------------------------------------- End
+
+
 
 

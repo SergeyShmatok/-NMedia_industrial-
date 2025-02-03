@@ -45,10 +45,10 @@ class NewPostFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            if (!state.postIsAdded) {
+        viewModel.dataState.observe(viewLifecycleOwner) { stateModel ->
+            if (!stateModel.postIsAdded) {
                 viewModel.toastFun()
-                viewModel.postIsAddedTrue()
+                viewModel.postAddedIsTrue()
             }
         }
 

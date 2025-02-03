@@ -31,7 +31,9 @@
         android:id="@+id/errorGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="retryTitle,retryButton" />
+        app:constraint_referenced_ids="retryTitle,retryButton"
+        android:visibility="gone"
+        />
 
     <TextView
         android:id="@+id/emptyText"
@@ -53,6 +55,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+<!--    ProgressBar можно перенести ниже RecyclerView тогда ползунок -->
+<!--    загрузки будет крутиться "как надо" (дольше).-->
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swiperefresh"

@@ -15,15 +15,34 @@ data class PostEntity(
     val likes: Int = 0,
 
 ) {
+
     fun toDto() = Post(
         id, author, content, published, likedByMe, likes,
         authorAvatar = "",
-    )
+    ) // По сути, функция просто возвращает инстанс Post
+      // и инициализирует его поля полями своего класса (экземпляра).
+      // Хорошая практика в связке с функциями (**) расширения👇
 
     companion object {
         fun fromDto(dto: Post) =
             PostEntity(dto.id, dto.author, dto.content, dto.published, dto.likedByMe, dto.likes)
-
     }
+
 }
 
+fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto) // (**)
+// fun List<PostEntity>.toDto(): List<Post> = map { it.toDto() } - или так
+fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)
+
+//--------------------------------------------------------------------------------------------------
+//                                      - Второй вариант -
+//  fun toDto(entity: PostEntity) = Post(
+//        entity.id, entity.author, entity.content, entity.published, entity.likedByMe, entity.likes,
+//        authorAvatar = "",
+//    )
+//
+//    companion object {
+//        fun fromDto(dto: Post) =
+//            PostEntity(dto.id, dto.author, dto.content, dto.published, dto.likedByMe, dto.likes)
+//    }
+//--------------------------------------------------------------------------------------------------
