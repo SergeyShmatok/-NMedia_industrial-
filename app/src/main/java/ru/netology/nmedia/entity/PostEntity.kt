@@ -13,19 +13,21 @@ data class PostEntity(
     val published: String,
     val likedByMe: Boolean,
     val likes: Int = 0,
-
-) {
+    val authorAvatar: String,
+    // var attachment: Attachment? = null
+    ) {
 
     fun toDto() = Post(
         id, author, content, published, likedByMe, likes,
-        authorAvatar = "",
+        authorAvatar,
     ) // По сути, функция просто возвращает инстанс Post
       // и инициализирует его поля полями своего класса (экземпляра).
       // Хорошая практика в связке с функциями (**) расширения👇
 
     companion object {
         fun fromDto(dto: Post) =
-            PostEntity(dto.id, dto.author, dto.content, dto.published, dto.likedByMe, dto.likes)
+            PostEntity(dto.id, dto.author, dto.content,
+                dto.published, dto.likedByMe, dto.likes, dto.authorAvatar)
     }
 
 }

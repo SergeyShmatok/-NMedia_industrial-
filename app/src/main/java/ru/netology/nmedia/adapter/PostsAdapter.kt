@@ -12,6 +12,7 @@ import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.util.loadAttachments
 import ru.netology.nmedia.util.loadAvatars
+//import ru.netology.nmedia.util.loadCircleCrop
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
