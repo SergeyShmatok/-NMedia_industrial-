@@ -2,18 +2,27 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import android.widget.Toast
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
+import ru.netology.nmedia.error.DbError
 import ru.netology.nmedia.error.NetworkError
-import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
-import ru.netology.nmedia.repository.*
+import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.SingleLiveEvent
+
 
 private val empty = Post(
     id = 0,
@@ -28,9 +37,14 @@ private val empty = Post(
 
 // @Deprecated(message = "Не использовать", replaceWith = ReplaceWith...) (Из вебинара)
 class PostViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = PostRepository(AppDb.getInstance(application).postDao())
 
-    private val repository = PostRepositoryImpl(AppDb.getInstance(application).postDao())
     private val _data = repository.data.map { FeedModel(posts = it) }
+        .catch { e -> throw AppError.from(e) }  // Перехватывает исключения в завершении потока
+        // и вызывает указанное действие с перехваченным исключением.
+        // Этот оператор прозрачен для исключений, которые возникают в нисходящем потоке,
+        // и не перехватывает исключения, которые выбрасываются для отмены потока.
+        .asLiveData(Dispatchers.Default)
     val data: LiveData<FeedModel>
         get() = _data
 
@@ -44,6 +58,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
+    val newerCount = data.switchMap { // Этот механизм можно применять для других задач,
+        // например, оповещать в UI о наличии интернета
+        // (как-то отображать через элементы интерфейса).
+        repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
+            .catch { e -> println(e) }
+            .asLiveData(Dispatchers.Default)
+
+    }
 
 //--------------------------------------------------------------------------------------------------
 
@@ -53,31 +75,38 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadPosts(refreshed: Boolean = false) = viewModelScope.launch {
 
-            // viewModelScope описана на главном потоке (Dispatchers.Main.immediate),
-            // но асинхронно с ним самим. "Корутины — это потоки исполнения кода,
-            // которые организуются поверх системных потоков".
-            // _data.value = (FeedModel(loading = true))
+        // viewModelScope описана на главном потоке (Dispatchers.Main.immediate),
+        // но асинхронно с ним самим. "Корутины — это потоки исполнения кода,
+        // которые организуются поверх системных потоков".
+        // _data.value = (FeedModel(loading = true))
 
         val state = if (refreshed) (FeedModelState(refreshing = true))
         else (FeedModelState(loading = true))
 
-            try {
-                _dataState.value = state
-                repository.getAll()
-                _dataState.value = FeedModelState()
-            } catch (e: Exception) {
-                _dataState.value = (FeedModelState(error = true))
-                if (e is AppError) when (e) {
-                        is ApiError -> {} // Можно поставить разные "флаги" на разные ошибки
-                        NetworkError -> {} // --//--
-                        UnknownError -> {} // --//--
-                    }
+        try {
+            _dataState.value = state
+            repository.getAll()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = (FeedModelState(error = true))
+            if (e is AppError) when (e) {
+                is ApiError -> {} // Можно поставить разные "флаги" на разные ошибки
+                is NetworkError -> {} // --//--
+                is DbError -> {}
+                else -> {} // --//--
+
             }
         }
+    }
+//--------------------------------------------------------------------------------------------------
+
+   fun newPostsIsVisible() = viewModelScope.launch {
+       repository.addNewPostsRoom()
+   }
 
 //--------------------------------------------------------------------------------------------------
 
-    fun refreshing() = viewModelScope.launch {
+    fun refreshing() {
         loadPosts(true)
     }
 
@@ -91,37 +120,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             _dataState.value = (FeedModelState(likeError = false))
         } catch (e: Exception) {
             _dataState.value = (FeedModelState(likeError = true))
-            if (e is AppError) when (e) {
-                is ApiError -> {}
-                NetworkError -> {}
-                UnknownError -> {}
+
             }
         }
-    }
+
 
 //--------------------------------------------------------------------------------------------------
 
     fun removeLike(id: Long) = viewModelScope.launch {
-        // viewModelScope автоматически отменится в случае закрытия активити
+
 
         try {
             repository.removeLike(id)
             _dataState.value = (FeedModelState(likeError = false))
         } catch (e: Exception) {
             _dataState.value = (FeedModelState(likeError = true))
-            if (e is AppError) when (e) {
-                is ApiError -> {}
-                NetworkError -> {}
-                UnknownError -> {}
-            }
+
         }
     }
 
-    // val old = _data.value?.posts.orEmpty()
 //--------------------------------------------------------------------------------------------------
 
-    fun likeErrorIsFalse() {
-        _dataState.value = _dataState.value?.copy(likeError = false)
+    fun cleanModel() {
+        _dataState.value = FeedModelState()
     }
 
 //--------------------------------------------------------------------------------------------------
@@ -129,24 +150,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun removeById(id: Long) = viewModelScope.launch {
 
         try {
-             repository.removeById(id)
+            repository.removeById(id)
             _dataState.value = _dataState.value?.copy(postIsDeleted = true)
 
         } catch (e: Exception) {
             _dataState.value = _dataState.value?.copy(postIsDeleted = false)
-            if (e is AppError) when (e) {
-                is ApiError -> {}
-                NetworkError -> {}
-                UnknownError -> {}
-            }
+
         }
-    }
-
-//--------------------------------------------------------------------------------------------------
-
-    fun postDelIsTrue() {
-        _dataState.value = _dataState.value?.copy(postIsDeleted = true)
-
     }
 
 //--------------------------------------------------------------------------------------------------
@@ -154,29 +164,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun save() = viewModelScope.launch {
 
         try {
-
             edited.value?.let {
-                repository.save(it)
                 _postCreated.value = Unit
+                 repository.save(it)
                 _dataState.value = _dataState.value?.copy(postIsAdded = true)
             }
 
         } catch (e: Exception) {
             _dataState.value = _dataState.value?.copy(postIsAdded = false)
-            if (e is AppError) when (e) {
-                is ApiError -> {}
-                NetworkError -> {}
-                UnknownError -> {}
-            }
+
         }
         edited.value = empty
-    }
-
-//--------------------------------------------------------------------------------------------------
-
-    fun postAddedIsTrue() {
-        _dataState.value = _dataState.value?.copy(postIsAdded = true)
-
     }
 
 //--------------------------------------------------------------------------------------------------
@@ -187,7 +185,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             "Не удалось, попробуйте позже",
             "Ошибка :(",
             "Что-то пошло нет так..попробуйте снова",
-            "Нет связи с сервером",
+            "Ошибка соединения",
         )
         val randomPhrase = phrase.random()
         val text = if (!refreshing) randomPhrase else refreshedPhrase

@@ -34,8 +34,11 @@ interface PostApiService {
     @GET("posts")
     suspend fun getAll(): Response <List<Post>>
 
-    //    @GET("post/{id}")
-    // fun getById(@Path("id") id: Long): Call<List<Post>>
+
+    @GET("posts/{id}/newer")
+    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
+
+
 
     @DELETE("posts/{id}")
     suspend fun removeById(@Path("id") id: Long): Response <Unit>
@@ -64,3 +67,7 @@ object PostApi {
 
     }
 }
+
+
+//  //    @GET("post/{id}")
+//    // fun getById(@Path("id") id: Long): Call<List<Post>>

@@ -21,4 +21,7 @@
     <string name="channel_remote_name">Server notifications</string>
     <string name="channel_remote_description">Notifications from remote server</string>
     <string name="image_by_link">Attachment for the post</string>
+    <string name="extended_fab_text">New posts: %1$s</string>
+    <string name="show_new_messages">Show new messages</string>
+
 </resources>

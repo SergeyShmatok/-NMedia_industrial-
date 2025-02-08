@@ -22,4 +22,6 @@
     <string name="channel_remote_name">Уведомления с сервера</string>
     <string name="channel_remote_description">Уведомления с удалённого сервера</string>
     <string name="image_by_link">Вложение-картинка для поста</string>
+    <string name="extended_fab_text">Новых записей: %1$s</string>
+    <string name="show_new_messages">Показать новые сообщения</string>
 </resources>

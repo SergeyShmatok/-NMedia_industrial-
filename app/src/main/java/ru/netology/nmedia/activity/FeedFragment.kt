@@ -35,7 +35,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-               if (!post.likedByMe) viewModel.likeById(post.id)
+                if (!post.likedByMe) viewModel.likeById(post.id)
                 else viewModel.removeLike(post.id)
             }
 
@@ -62,45 +62,58 @@ class FeedFragment : Fragment() {
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts) // это про передачу постов в рисайклер
             binding.emptyText.isVisible = state.empty // --//--
+
         }
 
         viewModel.dataState.observe(viewLifecycleOwner) { stateModel ->
             binding.progress.isVisible = stateModel.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
             binding.swiperefresh.isRefreshing = stateModel.refreshing // --//--
 
-           if (stateModel.error) {
-               Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_INDEFINITE).
-                       setAction(R.string.retry_loading) {
-                           viewModel.loadPosts()
-                       }.show()
-           }
+            if (stateModel.error) {
+                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.retry_loading) {
+                        viewModel.loadPosts()
+                    }.show()
+            }
 
             if (stateModel.likeError) {
                 viewModel.toastFun()
-                viewModel.likeErrorIsFalse()
+                viewModel.cleanModel()
             }
 
             if (!stateModel.postIsDeleted) {
-                    viewModel.toastFun()
-                    viewModel.postDelIsTrue()
-                }
-
+                viewModel.toastFun()
+                viewModel.cleanModel()
             }
 
-            binding.swiperefresh.setOnRefreshListener {
-                viewModel.toastFun(true)
-                viewModel.refreshing()
-            }
-
-
-//            binding.retryButton.setOnClickListener {
-//                viewModel.loadPosts()
-//            }
-
-            binding.fab.setOnClickListener {
-                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-            }
-
-            return binding.root
         }
+
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            println(it)
+            if (it > 0) {
+                binding.extendedFab.text = getString(R.string.extended_fab_text)
+                    .format("$it")
+                binding.extendedFab.isVisible = true
+            }
+        }
+
+        binding.extendedFab.setOnClickListener {
+            viewModel.newPostsIsVisible()
+            binding.extendedFab.isVisible = false
+            binding.list.smoothScrollToPosition(-10)
+        }
+
+        binding.swiperefresh.setOnRefreshListener {
+            viewModel.toastFun(true)
+            viewModel.refreshing()
+        }
+
+
+        binding.fab.setOnClickListener {
+            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+        }
+
+        return binding.root
     }
+}

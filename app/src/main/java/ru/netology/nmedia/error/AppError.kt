@@ -1,20 +1,28 @@
 package ru.netology.nmedia.error
 
-sealed class AppError: RuntimeException()
+import android.database.SQLException
+import java.io.IOException
 
 // sealed классы в явном виде перечисляют классы, которым разрешено быть
 // их дочерними классами. Такой контроль дает нам больше уверенности в том,
 // как именно тот или иной класс будет использоваться в нашем коде.
 
 
-data class ApiError(val status: Int): AppError()
+ sealed class AppError(var code: String) : RuntimeException() {
+    companion object {
+        fun from(e: Throwable): AppError = when (e) {
+            is AppError -> e
+            is SQLException -> DbError
+            is IOException -> NetworkError
+            else -> UnknownError
+        }
+    }
+}
 
-object NetworkError : AppError()
-
-object UnknownError: AppError()
-
-
-
+class ApiError(val status: Int, code: String) : AppError(code)
+object NetworkError : AppError("error_network")
+object DbError : AppError("error_db")
+object UnknownError : AppError("error_unknown")
 
 
 //--------------------------------------------------------------------------------------------------

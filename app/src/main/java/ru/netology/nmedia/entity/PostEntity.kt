@@ -36,6 +36,7 @@ fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto) // (**)
 // fun List<PostEntity>.toDto(): List<Post> = map { it.toDto() } - или так
 fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)
 
+
 //--------------------------------------------------------------------------------------------------
 //                                      - Второй вариант -
 //  fun toDto(entity: PostEntity) = Post(

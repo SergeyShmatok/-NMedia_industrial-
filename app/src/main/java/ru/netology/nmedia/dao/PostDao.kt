@@ -1,21 +1,24 @@
 package ru.netology.nmedia.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
-    fun getAll(): LiveData<List<PostEntity>>
+    fun getAll(): Flow<List<PostEntity>>
 
-    @Insert(PostEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    fun getSimpleList(): List<PostEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(post: PostEntity)
 
-    @Insert(PostEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)
 
     @Query(
@@ -31,7 +34,7 @@ interface PostDao {
     @Query(
         """
         UPDATE PostEntity SET
-       likes = likes - 1,
+        likes = likes - 1,
         likedByMe = 0
         WHERE id = :id
         """

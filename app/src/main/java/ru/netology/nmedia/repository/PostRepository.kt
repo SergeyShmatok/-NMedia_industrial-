@@ -1,31 +1,39 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import ru.netology.nmedia.api_service.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import java.io.IOException
 
 
-class PostRepositoryImpl(private val dao: PostDao) : PostRepositoryFun {
+class PostRepository(private val dao: PostDao) : PostRepositoryFun {
+    override var newPost: List<Post> = emptyList()
 
-    override val data: LiveData<List<Post>> = dao.getAll().map { it.toDto() }
+    override val data = dao.getAll().map { it.toDto() }.flowOn(Dispatchers.Default)
     // override val data: LiveData<List<Post>> = dao.getAll()
     // .map { it.map {entity -> entity.toDto()} }
-    // мой вариант☝️
 
     override suspend fun getAll() {
 
         try {
 
             val response = PostApi.retrofitService.getAll()
-            if (!response.isSuccessful) throw ApiError(response.code())
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             val posts = response.body() ?: throw UnknownError
             dao.insert(posts.toEntity())
@@ -41,20 +49,48 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepositoryFun {
 
 //--------------------------------------------------------------------------------------------------
 
+    override fun getNewerCount(id: Long): Flow<Int> = flow {
+
+        while (true) {  // Цикл прерывается вызовом - CancellationException -
+        delay(10_000L)
+
+            val response = PostApi.retrofitService.getNewer(id)
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            newPost = newPost + body
+            // dao.insert(body.toEntity())
+
+            emit(body.size) } }
+        .catch { e -> throw AppError.from(e) }
+        .flowOn(Dispatchers.Default)
+
+//--------------------------------------------------------------------------------------------------
+
+    suspend fun addNewPostsRoom() {
+        dao.insert(newPost.toEntity())
+        newPost = emptyList()
+    }
+
+//--------------------------------------------------------------------------------------------------
+
     override suspend fun likeById(id: Long) {
             dao.likeById(id)
         try {
 
             val response = PostApi.retrofitService.likeById(id)
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
-            if (!response.isSuccessful) throw ApiError(response.code())
+            response.body() ?: throw UnknownError
 
         } catch (e: IOException) {
             dao.removeLike(id)
             throw NetworkError
         } catch (e: ApiError) {
+            dao.removeLike(id)
             throw e
         } catch (e: Exception) {
+            dao.removeLike(id)
             throw UnknownError
         }
 
@@ -67,37 +103,47 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepositoryFun {
         try {
 
             val response = PostApi.retrofitService.removeLike(id)
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
-            if (!response.isSuccessful) throw ApiError(response.code())
+            response.body() ?: throw UnknownError
 
         } catch (e: IOException) {
             dao.likeById(id)
             throw NetworkError
         } catch (e: ApiError) {
+            dao.likeById(id)
             throw e
         } catch (e: Exception) {
+            dao.likeById(id)
             throw UnknownError
         }
 
     }
 
+
 //--------------------------------------------------------------------------------------------------
 
     override suspend fun removeById(id: Long) {
 
+        val currentList = withContext(Dispatchers.Default) { dao.getSimpleList() }
+
+        dao.removeById(id)
 
         try {
 
             val response = PostApi.retrofitService.removeById(id)
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
-            if (!response.isSuccessful) throw ApiError(response.code())
-            else dao.removeById(id)
+            response.body() ?: throw UnknownError
 
         } catch (e: IOException) {
+            dao.insert(currentList)
             throw NetworkError
         } catch (e: ApiError) {
+            dao.insert(currentList)
             throw e
         } catch (e: Exception) {
+            dao.insert(currentList)
             throw UnknownError
         }
     }
@@ -106,11 +152,18 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepositoryFun {
 
     override suspend fun save(post: Post) {
 
+       // val currentList = withContext(Dispatchers.Default) { dao.getSimpleList() }
+       // dao.insert(PostEntity.fromDto(post))
+
         try {
 
             val response = PostApi.retrofitService.save(post)
 
-            if (!response.isSuccessful) throw ApiError(response.code())
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+
+            val body = response.body() ?: throw UnknownError
+
+            dao.insert(PostEntity.fromDto(body))
 
         } catch (e: IOException) {
             throw NetworkError
