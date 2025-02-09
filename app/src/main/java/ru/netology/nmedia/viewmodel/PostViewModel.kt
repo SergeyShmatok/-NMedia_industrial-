@@ -39,6 +39,11 @@ private val empty = Post(
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PostRepository(AppDb.getInstance(application).postDao())
 
+    private var _newPostData = repository.newPost
+    val newPostData: MutableLiveData<List<Post>?>
+        get() = _newPostData
+
+
     private val _data = repository.data.map { FeedModel(posts = it) }
         .catch { e -> throw AppError.from(e) }  // Перехватывает исключения в завершении потока
         // и вызывает указанное действие с перехваченным исключением.
@@ -62,7 +67,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         // например, оповещать в UI о наличии интернета
         // (как-то отображать через элементы интерфейса).
         repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
-            .catch { e -> println(e) }
+            .catch {e -> if (e is NetworkError) { cleanNewPost(); println(e)
+                _dataState.postValue(FeedModelState(error = true)) }
+            else throw AppError.from(e) }
             .asLiveData(Dispatchers.Default)
 
     }
@@ -80,15 +87,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         // которые организуются поверх системных потоков".
         // _data.value = (FeedModel(loading = true))
 
-        val state = if (refreshed) (FeedModelState(refreshing = true))
-        else (FeedModelState(loading = true))
+        val state = if (refreshed) FeedModelState(refreshing = true)
+        else FeedModelState(loading = true)
 
         try {
             _dataState.value = state
             repository.getAll()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
-            _dataState.value = (FeedModelState(error = true))
+            _dataState.value = FeedModelState(error = true)
             if (e is AppError) when (e) {
                 is ApiError -> {} // Можно поставить разные "флаги" на разные ошибки
                 is NetworkError -> {} // --//--
@@ -101,13 +108,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //--------------------------------------------------------------------------------------------------
 
    fun newPostsIsVisible() = viewModelScope.launch {
-       repository.addNewPostsRoom()
+       repository.addNewPostsToRoom()
    }
 
 //--------------------------------------------------------------------------------------------------
 
     fun refreshing() {
         loadPosts(true)
+
     }
 
 //--------------------------------------------------------------------------------------------------
@@ -117,9 +125,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
         try {
             repository.likeById(id)
-            _dataState.value = (FeedModelState(likeError = false))
+            _dataState.value = FeedModelState(likeError = false)
         } catch (e: Exception) {
-            _dataState.value = (FeedModelState(likeError = true))
+            _dataState.value = FeedModelState(likeError = true)
 
             }
         }
@@ -132,9 +140,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
         try {
             repository.removeLike(id)
-            _dataState.value = (FeedModelState(likeError = false))
+            _dataState.value = FeedModelState(likeError = false)
         } catch (e: Exception) {
-            _dataState.value = (FeedModelState(likeError = true))
+            _dataState.value = FeedModelState(likeError = true)
 
         }
     }
@@ -145,16 +153,20 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         _dataState.value = FeedModelState()
     }
 
+    fun cleanNewPost() {
+        repository.cleanNewPostInRepo()
+    }
+
 //--------------------------------------------------------------------------------------------------
 
     fun removeById(id: Long) = viewModelScope.launch {
 
         try {
             repository.removeById(id)
-            _dataState.value = _dataState.value?.copy(postIsDeleted = true)
+            _dataState.value = FeedModelState(postIsDeleted = true)
 
         } catch (e: Exception) {
-            _dataState.value = _dataState.value?.copy(postIsDeleted = false)
+            _dataState.value = FeedModelState(postIsDeleted = false)
 
         }
     }
@@ -167,11 +179,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             edited.value?.let {
                 _postCreated.value = Unit
                  repository.save(it)
-                _dataState.value = _dataState.value?.copy(postIsAdded = true)
+                _dataState.value = FeedModelState(postIsAdded = true)
             }
 
         } catch (e: Exception) {
-            _dataState.value = _dataState.value?.copy(postIsAdded = false)
+            _dataState.value = FeedModelState(postIsAdded = false)
 
         }
         edited.value = empty

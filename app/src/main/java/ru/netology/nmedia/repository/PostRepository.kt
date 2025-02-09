@@ -1,5 +1,6 @@
 package ru.netology.nmedia.repository
 
+import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -7,7 +8,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import ru.netology.nmedia.api_service.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
@@ -22,7 +22,8 @@ import java.io.IOException
 
 
 class PostRepository(private val dao: PostDao) : PostRepositoryFun {
-    override var newPost: List<Post> = emptyList()
+
+    var newPost = MutableLiveData<List<Post>?>()
 
     override val data = dao.getAll().map { it.toDto() }.flowOn(Dispatchers.Default)
     // override val data: LiveData<List<Post>> = dao.getAll()
@@ -58,19 +59,24 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            newPost = newPost + body
-            // dao.insert(body.toEntity())
-
+             newPost.postValue((newPost.value?.plus(body)) ?: body)
+            println(newPost.value)
             emit(body.size) } }
         .catch { e -> throw AppError.from(e) }
         .flowOn(Dispatchers.Default)
 
 //--------------------------------------------------------------------------------------------------
 
-    suspend fun addNewPostsRoom() {
-        dao.insert(newPost.toEntity())
-        newPost = emptyList()
+    suspend fun addNewPostsToRoom() {
+        newPost.value?.toEntity()?.let { dao.insert(it) }
+        newPost.value = null
     }
+
+//--------------------------------------------------------------------------------------------------
+
+     fun cleanNewPostInRepo() {
+    newPost.postValue(null)
+     }
 
 //--------------------------------------------------------------------------------------------------
 
@@ -125,7 +131,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
     override suspend fun removeById(id: Long) {
 
-        val currentList = withContext(Dispatchers.Default) { dao.getSimpleList() }
+        val currentList = dao.getSimpleList()
 
         dao.removeById(id)
 
@@ -152,7 +158,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
     override suspend fun save(post: Post) {
 
-       // val currentList = withContext(Dispatchers.Default) { dao.getSimpleList() }
+       // val currentList = dao.getSimpleList()
        // dao.insert(PostEntity.fromDto(post))
 
         try {

@@ -66,7 +66,8 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.dataState.observe(viewLifecycleOwner) { stateModel ->
-            binding.progress.isVisible = stateModel.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
+            binding.progress.isVisible =
+                stateModel.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
             binding.swiperefresh.isRefreshing = stateModel.refreshing // --//--
 
             if (stateModel.error) {
@@ -88,25 +89,27 @@ class FeedFragment : Fragment() {
 
         }
 
-
         viewModel.newerCount.observe(viewLifecycleOwner) {
             println(it)
-            if (it > 0) {
-                binding.extendedFab.text = getString(R.string.extended_fab_text)
-                    .format("$it")
-                binding.extendedFab.isVisible = true
-            }
+            binding.extendedFab.text = getString(R.string.extended_fab_text)
+                .format("$it")
         }
+
+        viewModel.newPostData.observe(viewLifecycleOwner) {
+            binding.extendedFab.isVisible = !it.isNullOrEmpty()
+        }
+
 
         binding.extendedFab.setOnClickListener {
             viewModel.newPostsIsVisible()
-            binding.extendedFab.isVisible = false
             binding.list.smoothScrollToPosition(-10)
         }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.toastFun(true)
+            viewModel.cleanNewPost()
             viewModel.refreshing()
+            binding.list.smoothScrollToPosition(-10)
         }
 
 
