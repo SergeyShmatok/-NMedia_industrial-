@@ -8,8 +8,13 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api_service.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
+import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toDto
@@ -18,6 +23,7 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
+import java.io.File
 import java.io.IOException
 
 
@@ -53,7 +59,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
     override fun getNewerCount(id: Long): Flow<Int> = flow {
 
         while (true) {  // Цикл прерывается вызовом - CancellationException -
-        delay(10_000L)
+        delay(15_000L)
 
             val response = PostApi.retrofitService.getNewer(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
@@ -179,6 +185,38 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             throw UnknownError
         }
     }
+
+    override suspend fun saveWithAttachment(post: Post, file: File) {
+        try {
+
+            val media = upload(file)
+
+            val response = PostApi.retrofitService.save(post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE)))
+
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+
+            val body = response.body() ?: throw UnknownError
+
+            dao.insert(PostEntity.fromDto(body))
+
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: ApiError) {
+            throw e
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+
+    }
+
+    private suspend fun upload(file: File): Media =
+        PostApi.retrofitService.upload(MultipartBody.Part.createFormData("file", file.name, file.asRequestBody()))
+                                                       // имя сервер будет поставлять своё👆
+      // MultipartBody.Part.createFormData — метод, который создаёт экземпляр MultipartBody.Part
+      // из библиотеки okhttp3. При использовании этого метода нужно указать имя части (обычно «файл»)
+      // и созданный RequestBody. Метод используется для работы с форматом Multipart/Form-Data,
+      // который позволяет отправлять двоичные данные и несколько типов данных за один запрос.
+
 }
 
 //------------------------------------ End

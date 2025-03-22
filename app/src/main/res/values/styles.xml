@@ -1,10 +1,11 @@
-<resources>
+<resources >
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
     </style>
 
     <style name="Widget.AppTheme.IconButton" parent="Widget.MaterialComponents.Button.TextButton.Icon">
@@ -23,5 +24,17 @@
         <item name="android:minWidth">@dimen/icon_button_min_size</item>
         <item name="android:minHeight">@dimen/icon_button_min_size</item>
     </style>
+
+        <!-- Base application theme. -->
+        <style name="AppTheme.Black" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+            <item name="colorPrimary">@color/black</item>
+            <item name="colorOnPrimary">@color/black</item>
+            <item name="colorOnSecondary">@color/black</item>
+            <item name="colorPrimaryVariant">@color/black</item>
+            <item name="colorSecondary">@color/black</item>
+            <item name="colorSecondaryVariant">@color/black</item>
+            <item name="android:statusBarColor">?attr/colorOnSecondary</item>
+
+        </style>
 
 </resources>

@@ -23,5 +23,14 @@
     <string name="image_by_link">Attachment for the post</string>
     <string name="extended_fab_text">New posts: %1$s</string>
     <string name="show_new_messages">Show new messages</string>
+    <string name="new_post_button">New Post</string>
+    <string name="take_photo_description">Take photo</string>
+    <string name="pick_photo_description">Pick photo</string>
+    <string name="preview_description">Preview</string>
+    <string name="delete_photo_button">Delete</string>
+    <string name="picture">Picture</string>
+    <string name="_1_of_1">1 of 1</string>
+    <string name="button_back">Button back</string>
+    <string name="edit_hint">Напишите ваш пост</string>
 
 </resources>

@@ -12,7 +12,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
-import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg1
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
@@ -27,6 +27,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             }
 
             val text = it.getStringExtra(Intent.EXTRA_TEXT)
+
             if (text?.isNotBlank() != true) {
                 return@let
             }
@@ -36,13 +37,26 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .navigate(
                     R.id.action_feedFragment_to_newPostFragment,
                     Bundle().apply {
-                        textArg = text
+                        textArg1 = text
                     }
                 )
+
         }
 
         checkGoogleApiAvailability()
+
     }
+
+//        fun transparentStatusBar(transparent: Boolean) {
+//            if (transparent) {
+//                WindowCompat.setDecorFitsSystemWindows(window, false)
+//                window.statusBarColor = Color.TRANSPARENT
+//            } else {
+//                WindowCompat.setDecorFitsSystemWindows(window, true)
+//                window.statusBarColor = R.color.black
+//            }
+//        }
+
 
     private fun requestNotificationsPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {

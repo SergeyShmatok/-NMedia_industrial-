@@ -1,5 +1,6 @@
 package ru.netology.nmedia.api_service
 
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.logging.HttpLoggingInterceptor.Level
@@ -10,9 +11,12 @@ import retrofit2.create
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import ru.netology.nmedia.BuildConfig
+import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 
 private val logger = HttpLoggingInterceptor().apply {
@@ -30,27 +34,32 @@ private val retrofit = Retrofit.Builder()
     .addConverterFactory(GsonConverterFactory.create())
     .build()
 
-interface PostApiService {
+interface ApiService {
     @GET("posts")
-    suspend fun getAll(): Response <List<Post>>
+    suspend fun getAll(): Response<List<Post>>
 
 
     @GET("posts/{id}/newer")
     suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
 
 
-
     @DELETE("posts/{id}")
-    suspend fun removeById(@Path("id") id: Long): Response <Unit>
+    suspend fun removeById(@Path("id") id: Long): Response<Unit>
 
     @DELETE("posts/{id}/likes")
-    suspend fun removeLike(@Path("id") id: Long): Response <Post>
+    suspend fun removeLike(@Path("id") id: Long): Response<Post>
 
     @POST("posts/{id}/likes")
-    suspend fun likeById(@Path("id") id: Long): Response <Post>
+    suspend fun likeById(@Path("id") id: Long): Response<Post>
 
     @POST("posts")
-    suspend fun save(@Body post: Post): Response <Post>
+    suspend fun save(@Body post: Post): Response<Post>
+
+    @Multipart
+    @POST("media")
+    suspend fun upload(@Part part: MultipartBody.Part): Media
+    // Если важен код ответа, можно использовать Response (обёртку),
+    // если нет, то сразу - результат.
 
     // Когда Retrofit анализирует сигнатуру методов и видит модификатор suspend,
     // тогда понимает, что надо выполнять код в корутинах.
@@ -61,7 +70,7 @@ interface PostApiService {
 
 object PostApi {
     val retrofitService by lazy {
-        retrofit.create<PostApiService>() // Создайте реализацию конечных точек API,
+        retrofit.create<ApiService>() // Создайте реализацию конечных точек API,
         // определенных интерфейсом службы. Относительный путь для данного метода получается из аннотации к методу,
         // описывающему тип запроса. Встроенные методы: GET, PUT, POST, PATCH, HEAD, DELETE и OPTIONS.
 

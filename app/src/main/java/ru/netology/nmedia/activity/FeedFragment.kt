@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.ImageViewingFragment.Companion.textArg2
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
@@ -27,6 +28,9 @@ class FeedFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+        // (requireActivity() as AppActivity).transparentStatusBar(false)
+
         val binding = FragmentFeedBinding.inflate(inflater, container, false)
 
         val adapter = PostsAdapter(object : OnInteractionListener {
@@ -55,6 +59,12 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
+            override fun openPhoto(post: Post) {
+                findNavController().navigate(R.id.action_feedFragment_to_imageViewingFragment,
+                    Bundle().apply { textArg2 = post.attachment?.url })
+            }
+
         })
 
         binding.list.adapter = adapter
@@ -99,10 +109,10 @@ class FeedFragment : Fragment() {
             binding.extendedFab.isVisible = !it.isNullOrEmpty()
         }
 
-
         binding.extendedFab.setOnClickListener {
             viewModel.newPostsIsVisible()
             binding.list.smoothScrollToPosition(-10)
+
         }
 
         binding.swiperefresh.setOnRefreshListener {
@@ -116,6 +126,7 @@ class FeedFragment : Fragment() {
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
+
 
         return binding.root
     }

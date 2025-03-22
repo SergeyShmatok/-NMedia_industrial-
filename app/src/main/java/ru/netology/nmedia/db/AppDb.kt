@@ -7,7 +7,10 @@ import androidx.room.RoomDatabase
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.entity.PostEntity
 
-@Database(entities = [PostEntity::class], version = 1, exportSchema = true)
+@Database(entities = [PostEntity::class], version = 2, exportSchema = true)
+// При изменении таблицы (добавление новых колонок)
+// нужно изменять версию и устанавливать миграцию (**)
+// либо заходить в приложение и всё чистить. Иначе получим exception при запуске.
 abstract class AppDb : RoomDatabase() {
     abstract fun postDao(): PostDao
 
@@ -23,8 +26,9 @@ abstract class AppDb : RoomDatabase() {
 
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(context, AppDb::class.java, "app.db")
-//                .fallbackToDestructiveMigration()
-//                .allowMainThreadQueries() - Чтобы можно было работать с Room на главном потоке (больше не нужно).
+                .fallbackToDestructiveMigration() // для миграции (**)
+                // .allowMainThreadQueries() - чтобы можно было работать с Room
+                //  на главном потоке (больше не нужно).
                 .build()
     }
 }

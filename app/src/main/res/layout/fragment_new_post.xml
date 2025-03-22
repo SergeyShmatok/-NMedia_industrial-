@@ -4,32 +4,122 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.NewPostFragment">
+    tools:context=".activity.NewPostFragment"
+    >
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+<LinearLayout
+    android:orientation="vertical"
+    android:paddingBottom="?actionBarSize"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+<!--paddingBottom="?actionBarSize" - чтобы была видна кнопка "DELETE"-->
+
 
     <EditText
         android:id="@+id/edit"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:autofillHints=""
+        android:background="@android:color/transparent"
+        android:hint="@string/edit_hint"
+        android:labelFor="@id/preview"
         android:gravity="start|top"
         android:inputType="textMultiLine"
-        android:background="@android:color/transparent"
-        />
+        android:padding="@dimen/common_spacing"
+        tools:text="@tools:sample/lorem[300]" />
 
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottomAppBar"
+    <FrameLayout
+        android:id="@+id/previewContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
+        tools:visibility="visible"
+        >
+<!--        tools:visibility="visible" - чтобы было видно работе с макетом,
+           но не при запуске -->
+        <ImageView
+            android:id="@+id/preview"
+            tools:src="@tools:sample/avatars"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/preview_description"
+            />
+        <!--    android:adjustViewBounds="true" - чтобы контент занимал всё свободное пространство-->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deleteButton"
+            android:text="@string/delete_photo_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            />
+    </FrameLayout>
+</LinearLayout>
+
+
+    </ScrollView>
+
+
+    <LinearLayout
+        android:id="@+id/bottomAppBar"
+        android:background="?colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
         android:layout_gravity="bottom"
-        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
-        />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/description_post_save"
-        app:srcCompat="@drawable/ic_ok_24dp"
-        app:layout_anchor="@id/bottomAppBar"
-        />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/takePhoto"
+            app:iconTint="?colorOnPrimary"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/baseline_add_a_photo_24"
+            android:contentDescription="@string/take_photo_description"
+            />
+<!--        colorOnPrimary - контрастный для Primary цвет.
+И меняется в зависимости от темы (день/ночь) -->
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pickPhoto"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/pick_photo_description"
+            app:icon="@drawable/baseline_add_photo_alternate_24"
+            app:iconTint="?colorOnPrimary" />
+
+        </LinearLayout>
+
+<!--    ?actionBarSize - установить фиксированный размер-->
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+    <!--    <com.google.android.material.bottomappbar.BottomAppBar-->
+    <!--        android:id="@+id/bottomAppBar"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="bottom"-->
+    <!--        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"-->
+    <!--        />-->
+    <!--    Прошлая👆 реализация BottomAppBar (заменённый LinearLayout'ом)-->
+
+
+    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--        android:id="@+id/ok"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:contentDescription="@string/description_post_save"-->
+    <!--        app:srcCompat="@drawable/ic_ok_24dp"-->
+    <!--        app:layout_anchor="@id/bottomAppBar"-->
+    <!--        />-->
+    <!--    Прошлая👆 реализация кнопки FAB-->

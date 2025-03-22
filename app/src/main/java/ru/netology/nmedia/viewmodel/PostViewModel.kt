@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -20,8 +21,10 @@ import ru.netology.nmedia.error.DbError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.io.File
 
 
 private val empty = Post(
@@ -40,8 +43,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PostRepository(AppDb.getInstance(application).postDao())
 
     private var _newPostData = repository.newPost
-    val newPostData: MutableLiveData<List<Post>?>
+    val newPostData: LiveData<List<Post>?>
         get() = _newPostData
+
+
+    private val _photo = MutableLiveData<PhotoModel?>(null)
+    val photo: LiveData<PhotoModel?>
+        get() = _photo
 
 
     private val _data = repository.data.map { FeedModel(posts = it) }
@@ -77,6 +85,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //--------------------------------------------------------------------------------------------------
 
     init { loadPosts() }
+
+//--------------------------------------------------------------------------------------------------
+
+    fun changePhoto (uri: Uri, file: File) {
+        _photo.value = PhotoModel(uri, file)
+    }
+
+    fun removePhoto () {
+        _photo.value = null
+    }
 
 //--------------------------------------------------------------------------------------------------
 
@@ -176,9 +194,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun save() = viewModelScope.launch {
 
         try {
-            edited.value?.let {
+            edited.value?.let { post ->
                 _postCreated.value = Unit
-                 repository.save(it)
+                 photo.value?.let {
+                    repository.saveWithAttachment(post, it.file)
+                } ?: repository.save(post)
+
                 _dataState.value = FeedModelState(postIsAdded = true)
             }
 
@@ -191,19 +212,25 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 //--------------------------------------------------------------------------------------------------
 
-    fun toastFun(refreshing: Boolean = false) {
+    fun toastFun(refreshing: Boolean = false, pickError: Boolean = false ) {
         val refreshedPhrase = "Data Refreshed"
+        val pickErrorPhrase = "Photo pick error"
         val phrase = listOf(
             "Не удалось, попробуйте позже",
             "Ошибка :(",
             "Что-то пошло нет так..попробуйте снова",
             "Ошибка соединения",
         )
+
         val randomPhrase = phrase.random()
-        val text = if (!refreshing) randomPhrase else refreshedPhrase
+        val text = when {
+                refreshing -> refreshedPhrase
+                pickError -> pickErrorPhrase
+                else -> randomPhrase
+        }
         Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
     }
-
+    // if (!refreshing) randomPhrase else refreshedPhrase
 //--------------------------------------------------------------------------------------------------
 
     fun edit(post: Post) {

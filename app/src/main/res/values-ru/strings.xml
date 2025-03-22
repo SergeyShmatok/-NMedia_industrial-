@@ -24,4 +24,13 @@
     <string name="image_by_link">Вложение-картинка для поста</string>
     <string name="extended_fab_text">Новых записей: %1$s</string>
     <string name="show_new_messages">Показать новые сообщения</string>
+    <string name="new_post_button">Новый пост</string>
+    <string name="take_photo_description">Сделать фото</string>
+    <string name="pick_photo_description">Выбрать фото</string>
+    <string name="preview_description">Превью</string>
+    <string name="delete_photo_button">Удалить</string>
+    <string name="picture">Картинка</string>
+    <string name="_1_of_1">1 из 1</string>
+    <string name="button_back">Кнопка назад</string>
+    <string name="edit_hint">Write your post</string>
 </resources>

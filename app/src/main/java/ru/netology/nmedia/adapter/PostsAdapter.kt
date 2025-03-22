@@ -12,13 +12,13 @@ import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.util.loadAttachments
 import ru.netology.nmedia.util.loadAvatars
-//import ru.netology.nmedia.util.loadCircleCrop
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun openPhoto(post: Post){}
 }
 
 class PostsAdapter(
@@ -36,8 +36,8 @@ class PostsAdapter(
 
 }
 
-private const val AVATARS_URL = "http://10.0.2.2:9999/avatars/"
-private const val ATTACHMENTS_URL = "http://10.0.2.2:9999/images/"
+const val AVATARS_URL = "http://10.0.2.2:9999/avatars/"
+const val ATTACHMENTS_URL = "http://10.0.2.2:9999/media/"
 
 class PostViewHolder(
     private val binding: CardPostBinding,
@@ -54,10 +54,9 @@ class PostViewHolder(
             like.text = "${post.likes}"
 
             avatar.loadAvatars("${AVATARS_URL}${post.authorAvatar}")
-
             if (post.attachment != null) attachment.apply {
                 loadAttachments("${ATTACHMENTS_URL}${post.attachment?.url}")
-                contentDescription = post.attachment?.description
+                // contentDescription = post.attachment?.description
                 visibility = View.VISIBLE }
                 else attachment.visibility = View.GONE
 
@@ -89,6 +88,10 @@ class PostViewHolder(
 
             share.setOnClickListener {
                 onInteractionListener.onShare(post)
+            }
+
+            attachment.setOnClickListener {
+                onInteractionListener.openPhoto(post)
             }
         }
     }
