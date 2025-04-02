@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api_service.PostApi
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
@@ -29,11 +30,15 @@ import java.io.IOException
 
 class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
-    var newPost = MutableLiveData<List<Post>?>()
+//--------------------------------------------------------------------------------------------------
+
+    var newPost = MutableLiveData<List<Post>?>(null)
 
     override val data = dao.getAll().map { it.toDto() }.flowOn(Dispatchers.Default)
     // override val data: LiveData<List<Post>> = dao.getAll()
     // .map { it.map {entity -> entity.toDto()} }
+
+//--------------------------------------------------------------------------------------------------
 
     override suspend fun getAll() {
 
@@ -143,7 +148,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = PostApi.retrofitService.removeById(id)
+            val response = PostApi.retrofitService.deletePost(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -187,6 +192,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
     }
 
     override suspend fun saveWithAttachment(post: Post, file: File) {
+
         try {
 
             val media = upload(file)
@@ -211,15 +217,71 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
     private suspend fun upload(file: File): Media =
         PostApi.retrofitService.upload(MultipartBody.Part.createFormData("file", file.name, file.asRequestBody()))
-                                                       // имя сервер будет поставлять своё👆
+                                                // имя сервер будет поставлять своё👆
       // MultipartBody.Part.createFormData — метод, который создаёт экземпляр MultipartBody.Part
       // из библиотеки okhttp3. При использовании этого метода нужно указать имя части (обычно «файл»)
       // и созданный RequestBody. Метод используется для работы с форматом Multipart/Form-Data,
       // который позволяет отправлять двоичные данные и несколько типов данных за один запрос.
 
+
+
+     override suspend fun updateUser(login: String, pass: String) {
+
+         try {
+
+             val response = PostApi.retrofitService.updateUser(login, pass)
+
+             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+
+             val body = response.body() ?: throw UnknownError
+
+             AppAuth.getInstance().setAuth(body.get("id").asLong, body.get("token").asString)
+
+         } catch (e: IOException) {
+             throw NetworkError
+         } catch (e: ApiError) {
+             throw e
+         } catch (e: Exception) {
+             throw UnknownError
+         }
+
+     }
+
+
+
+
+
+
 }
 
 //------------------------------------ End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,52 +1,56 @@
 [versions]
- activityKtx = "1.10.1"
- agp = "8.8.2"
- firebaseBom = "33.11.0"
- firebaseMessagingKtx = "24.1.1"
- glide = "4.16.0"
- gson = "2.11.0"
- imagepicker = "2.1"
+activityKtx = "1.10.1"
+agp = "8.9.1"
+firebaseBom = "33.12.0"
+firebaseMessagingKtx = "24.1.1"
+glide = "4.16.0"
+gson = "2.11.0"
+imagepicker = "2.1"
 kotlin = "2.0.21"
- coreKtx = "1.15.0"
- junit = "4.13.2"
- junitVersion = "1.2.1"
- espressoCore = "3.6.1"
- appcompat = "1.7.0"
- material = "1.12.0"
- constraintlayout = "2.2.1"
- navigationFragmentKtx = "2.8.9"
- navigationUiKtx = "2.8.9"
- okhttp = "4.12.0"
- playServicesBase = "18.6.0"
- recyclerview = "1.4.0"
- lifecycleLivedataKtx = "2.8.7"
- lifecycleViewmodelKtx = "2.8.7"
- roomCompiler = "2.6.1"
- roomRuntime = "2.6.1"
- roomKtx = "2.6.1"
- lifecycleCompiler = "2.8.7"
- lifecycleRuntimeKtx = "2.8.7"
- library = "8.8.2"
- googleServices = "4.4.2"
- swiperefreshlayout = "1.1.0"
- picasso = "2.8"
- retrofit = "2.11.0"
- retrofitConverterGson = "2.11.0"
- loggingInterceptor = "4.12.0"
- coroutines = "1.10.1"
- coroutinesAndroid = "1.10.1"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.0"
+material = "1.12.0"
+constraintlayout = "2.2.1"
+navigationFragmentKtx = "2.8.9"
+navigationUiKtx = "2.8.9"
+okhttp = "4.12.0"
+playServicesBase = "18.6.0"
+recyclerview = "1.4.0"
+lifecycleLivedataKtx = "2.8.7"
+lifecycleViewmodelKtx = "2.8.7"
+roomCompiler = "2.6.1"
+roomRuntime = "2.6.1"
+roomKtx = "2.6.1"
+lifecycleCompiler = "2.8.7"
+lifecycleRuntimeKtx = "2.8.7"
+library = "8.9.1"
+googleServices = "4.4.2"
+swiperefreshlayout = "1.1.0"
+picasso = "2.8"
+retrofit = "2.11.0"
+retrofitConverterGson = "2.11.0"
+loggingInterceptor = "4.12.0"
+coroutines = "1.10.1"
+coroutinesAndroid = "1.10.1"
+browser = "1.8.0"
+core = "1.15.0"
+annotation = "1.9.1"
+transportApi = "4.0.0"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-lifecycle-compiler = { module = "androidx.lifecycle:lifecycle-compiler", version.ref = "lifecycleCompiler"}
-androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx"}
+androidx-lifecycle-compiler = { module = "androidx.lifecycle:lifecycle-compiler", version.ref = "lifecycleCompiler" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-room-compiler-v250 = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
-androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx"}
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofitConverterGson" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
-google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom"}
+google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 google-firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 imagepicker = { module = "com.github.dhaval2404:imagepicker", version.ref = "imagepicker" }
@@ -54,9 +58,9 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutinesAndroid"}
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines"}
-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor"}
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutinesAndroid" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
@@ -65,15 +69,19 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
-picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso"}
+picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime"}
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
+transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-android-library = { id = "com.android.library", version.ref = "library"}
-google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices"}
-jetbrains-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt"}
+android-library = { id = "com.android.library", version.ref = "library" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+jetbrains-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }

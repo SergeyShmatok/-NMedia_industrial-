@@ -13,6 +13,7 @@ interface PostRepositoryFun {
     suspend fun likeById(id: Long)
     suspend fun removeById(id: Long)
     suspend fun removeLike(id: Long)
+    suspend fun updateUser(login: String, pass: String)
 
 
     fun getNewerCount(id: Long): Flow<Int>

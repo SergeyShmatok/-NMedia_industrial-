@@ -5,23 +5,40 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
+import androidx.core.view.MenuProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg1
+import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.viewmodel.AuthViewModel
+
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val authViewModel by viewModels<AuthViewModel>()
+
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+
         requestNotificationsPermission()
 
-        intent?.let {
+        checkGoogleApiAvailability()
+
+                intent?.let {
             if (it.action != Intent.ACTION_SEND) {
                 return@let
             }
@@ -43,19 +60,66 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
         }
 
-        checkGoogleApiAvailability()
+//----------------------------------------- MenuProvider -------------------------------------------
 
+        addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_auth, menu)
+                authViewModel.state.observe(this@AppActivity) {
+
+
+//                    вернёт id последнего фрагмента (?)
+//                    val lastFragmentId =
+//                        supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.first()?.id
+
+                    menu.setGroupVisible(R.id.authorized, authViewModel.isAuthenticated)
+                    menu.setGroupVisible(R.id.unauthorized, !authViewModel.isAuthenticated)
+
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                when (menuItem.itemId){
+                    R.id.signIn -> {
+//                        версия findNavController'а для Activity (не Fragment).
+                        findNavController(R.id.nav_host_fragment)
+                            .navigate(R.id.application_login_fragment)
+
+//                         имитация авторизации student'а
+//                         AppAuth.getInstance().setAuth(5, "x-token")
+                        true
+                    }
+
+                    R.id.logout -> {
+                        AppAuth.getInstance().removeAuth()
+                        true
+                    }
+
+                    else -> false
+
+                }
+        })
     }
 
-//        fun transparentStatusBar(transparent: Boolean) {
-//            if (transparent) {
-//                WindowCompat.setDecorFitsSystemWindows(window, false)
-//                window.statusBarColor = Color.TRANSPARENT
-//            } else {
-//                WindowCompat.setDecorFitsSystemWindows(window, true)
-//                window.statusBarColor = R.color.black
-//            }
-//        }
+//------------------------------------- Системные панели и пр. -----------------------------------
+
+    fun changeStatusBarColor(color: String) {
+            window.statusBarColor = color.toColorInt()
+        }
+
+  fun windowInsetsController() = WindowCompat
+        .getInsetsController(window, window.decorView)
+
+    fun transparentAppBar(transparent: Boolean) {
+
+        if (transparent) {
+            windowInsetsController().hide(WindowInsetsCompat.Type.statusBars())
+            } else {
+            windowInsetsController().show(WindowInsetsCompat.Type.statusBars())
+            }
+        }
+
+//--------------------------------------------------------------------------------------------------
 
 
     private fun requestNotificationsPermission() {
@@ -70,7 +134,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         }
 
         requestPermissions(arrayOf(permission), 1)
-    }
+    }     // запрос доступа к уведомлениям
+
 
     private fun checkGoogleApiAvailability() {
         with(GoogleApiAvailability.getInstance()) {
@@ -91,3 +156,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         }
     }
 }
+
+//--------------------------------------------------------------------------------------------------
+

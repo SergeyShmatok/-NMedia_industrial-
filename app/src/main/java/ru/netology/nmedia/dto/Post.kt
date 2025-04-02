@@ -1,7 +1,10 @@
 package ru.netology.nmedia.dto
 
-data class Post(
-    val id: Long,
+
+// Иногда в названии указывают прямо, что это объект именно для передачи данных.
+// (например, PostDto, а не просто Post)
+data class Post( val id: Long,
+    val authorId: Long,
     val author: String,
     val content: String,
     val published: String,
@@ -9,6 +12,7 @@ data class Post(
     val likes: Int = 0,
     val authorAvatar: String,
     var attachment: Attachment? = null,
+    val ownedByMe: Boolean = false,
 
     )
 

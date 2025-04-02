@@ -10,6 +10,7 @@ data class PostEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
     val author: String,
+    val authorId: Long,
     val content: String,
     val published: String,
     val likedByMe: Boolean,
@@ -24,6 +25,7 @@ data class PostEntity(
     fun toDto() = Post(
         id = id,
         author = author,
+        authorId = authorId,
         content = content,
         published = published,
         likedByMe = likedByMe,
@@ -39,6 +41,7 @@ data class PostEntity(
             PostEntity(
                 id = dto.id,
                 author = dto.author,
+                authorId = dto.authorId,
                 content = dto.content,
                 published = dto.published,
                 likedByMe = dto.likedByMe,
@@ -53,8 +56,8 @@ data class PostEntity(
 }
 
 fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto) // (**)
-
 // fun List<PostEntity>.toDto(): List<Post> = map { it.toDto() } - или так
+
 fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)
 
 

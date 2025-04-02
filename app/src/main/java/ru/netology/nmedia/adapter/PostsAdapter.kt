@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -40,6 +41,7 @@ const val AVATARS_URL = "http://10.0.2.2:9999/avatars/"
 const val ATTACHMENTS_URL = "http://10.0.2.2:9999/media/"
 
 class PostViewHolder(
+
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
 ) : RecyclerView.ViewHolder(binding.root) {
@@ -60,6 +62,7 @@ class PostViewHolder(
                 visibility = View.VISIBLE }
                 else attachment.visibility = View.GONE
 
+            menu.isVisible = post.ownedByMe
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -93,6 +96,7 @@ class PostViewHolder(
             attachment.setOnClickListener {
                 onInteractionListener.openPhoto(post)
             }
+
         }
     }
 }

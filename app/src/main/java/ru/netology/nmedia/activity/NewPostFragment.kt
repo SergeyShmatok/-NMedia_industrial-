@@ -55,6 +55,8 @@ class NewPostFragment : Fragment() {
                 menuInflater.inflate(R.menu.new_post, menu)
                 // первым параметром передаёт XML меню, вторым объект меню
                 // после вызова inflate заполнит данными объект "menu"
+                    menu.setGroupVisible(R.id.authorized, false)
+                    menu.setGroupVisible(R.id.unauthorized, false)
                 }
 
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
@@ -66,7 +68,8 @@ class NewPostFragment : Fragment() {
                    } else
                        false
 
-            }, viewLifecycleOwner) // - если не указать не будут убираться пункты меню (?)
+            }, viewLifecycleOwner) // - если не указать, то пункты меню,
+            // добавленные в этом фрагменте, "перейдут" в другие.
 
 //--------------------------------------------------------------------------------------------------
 
@@ -118,7 +121,6 @@ class NewPostFragment : Fragment() {
                 .createIntent(photoLauncher::launch)
                         // photoLauncher.launch(it)
         }
-
 
         binding.pickPhoto.setOnClickListener {
             ImagePicker.Builder(this)

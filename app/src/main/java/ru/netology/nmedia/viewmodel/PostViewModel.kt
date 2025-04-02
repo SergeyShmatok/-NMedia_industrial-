@@ -10,9 +10,12 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.error.ApiError
@@ -36,28 +39,30 @@ private val empty = Post(
     published = "",
     authorAvatar = "",
     attachment = null,
+    authorId = 0,
 )
 
 // @Deprecated(message = "Не использовать", replaceWith = ReplaceWith...) (Из вебинара)
 class PostViewModel(application: Application) : AndroidViewModel(application) {
+
     private val repository = PostRepository(AppDb.getInstance(application).postDao())
 
-    private var _newPostData = repository.newPost
-    val newPostData: LiveData<List<Post>?>
-        get() = _newPostData
-
-
-    private val _photo = MutableLiveData<PhotoModel?>(null)
-    val photo: LiveData<PhotoModel?>
-        get() = _photo
-
-
-    private val _data = repository.data.map { FeedModel(posts = it) }
-        .catch { e -> throw AppError.from(e) }  // Перехватывает исключения в завершении потока
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _data = AppAuth.getInstance().authState.flatMapLatest { authState ->
+        repository.data.map { posts->
+            FeedModel(
+                posts.map {
+                    it.copy(ownedByMe = authState?.userId == it.authorId)
+                }
+            )
+        }.catch { e -> throw AppError.from(e)}
+    }
+         // Перехватывает исключения в завершении потока
         // и вызывает указанное действие с перехваченным исключением.
         // Этот оператор прозрачен для исключений, которые возникают в нисходящем потоке,
         // и не перехватывает исключения, которые выбрасываются для отмены потока.
         .asLiveData(Dispatchers.Default)
+
     val data: LiveData<FeedModel>
         get() = _data
 
@@ -81,6 +86,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             .asLiveData(Dispatchers.Default)
 
     }
+
+    private var _newPostData = repository.newPost
+    val newPostData: LiveData<List<Post>?>
+        get() = _newPostData
+
+    private val _photo = MutableLiveData<PhotoModel?>(null)
+    val photo: LiveData<PhotoModel?>
+        get() = _photo
+
 
 //--------------------------------------------------------------------------------------------------
 
@@ -230,7 +244,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
         Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
     }
-    // if (!refreshing) randomPhrase else refreshedPhrase
+
 //--------------------------------------------------------------------------------------------------
 
     fun edit(post: Post) {
@@ -248,6 +262,31 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 }
 
 //------------------------------------ End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //                                       - Old code -

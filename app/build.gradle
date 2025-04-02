@@ -70,6 +70,11 @@ dependencies {
     implementation libs.androidx.lifecycle.viewmodel.ktx
     implementation libs.androidx.lifecycle.livedata.ktx
     implementation libs.androidx.lifecycle.runtime.ktx
+    implementation libs.androidx.browser
+    implementation libs.androidx.core
+    implementation libs.androidx.annotation
+    implementation libs.transport.api
+    implementation libs.transport.api
     kapt libs.androidx.lifecycle.compiler
     implementation libs.material
     implementation libs.gson

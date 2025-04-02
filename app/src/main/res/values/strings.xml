@@ -31,6 +31,19 @@
     <string name="picture">Picture</string>
     <string name="_1_of_1">1 of 1</string>
     <string name="button_back">Button back</string>
-    <string name="edit_hint">Напишите ваш пост</string>
+    <string name="logout">Logout</string>
+    <string name="sign_up">Sign up</string>
+    <string name="sign_in">Sign in</string>
+    <string name="edit_hint">Write your post…</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="login">Login</string>
+    <string name="some_contents_description">some_сcontents_description</string>
+    <string name="OK">OK</string>
+    <string name="proceed">Proceed</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

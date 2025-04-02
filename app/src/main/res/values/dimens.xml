@@ -2,9 +2,25 @@
 <resources>
     <dimen name="common_spacing">16dp</dimen>
     <dimen name="posts_avatar_size">48dp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="fab_margin">32dp</dimen>
     <dimen name="checkbox_padding_start">8dp</dimen>
     <dimen name="icon_button_padding">12dp</dimen>
     <dimen name="icon_button_min_size">48dp</dimen>
+    <dimen name="_20dp">20dp</dimen>
+    <dimen name="_24dp">24dp</dimen>
+    <dimen name="_26dp">26dp</dimen>
+    <dimen name="_30dp">30dp</dimen>
+    <dimen name="_76dp">76dp</dimen>
+    <dimen name="_28dp">28dp</dimen>
+    <dimen name="_24sp">24sp</dimen>
+    <dimen name="_22sp">22sp</dimen>
+    <dimen name="_32dp">32dp</dimen>
+    <dimen name="_68dp">68dp</dimen>
+    <dimen name="_14dp">14dp</dimen>
+    <dimen name="_60dp">60dp</dimen>
+    <dimen name="_36dp">36dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="fragment_horizontal_margin">16dp</dimen>
+    <dimen name="fragment_vertical_margin">16dp</dimen>
 </resources>
 

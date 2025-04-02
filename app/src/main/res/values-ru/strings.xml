@@ -32,5 +32,16 @@
     <string name="picture">Картинка</string>
     <string name="_1_of_1">1 из 1</string>
     <string name="button_back">Кнопка назад</string>
-    <string name="edit_hint">Write your post</string>
+    <string name="edit_hint">Напишите ваш пост…</string>
+    <string name="logout">Выйти</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="sign_in">Войти</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_sign_in">Войти или зарегистрироваться</string>
+    <string name="action_sign_in_short">Войти</string>
+    <string name="login">Логин</string>
+    <string name="some_contents_description">описание содержания</string>
+    <string name="OK">ОК</string>
+    <string name="proceed">Продолжить</string>
+    <string name="cancel">Отмена</string>
 </resources>

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activity.ImageViewingFragment"
+    android:background="@color/black"
     >
 
 
@@ -12,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/black"
+        android:animateLayoutChanges="true"
         >
 
         <ImageView
@@ -27,15 +29,15 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/back_for_picture"
-            android:layout_width="60dp"
+            android:layout_width="@dimen/_60dp"
             android:layout_height="wrap_content"
-            android:paddingStart="18dp"
+            android:paddingStart="@dimen/_14dp"
             android:layout_gravity="start"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/_24dp"
             android:background="@android:color/transparent"
             app:icon="@drawable/baseline_arrow_back_24"
             app:iconTint="@color/white"
-            app:iconSize="32dp"
+            app:iconSize="@dimen/_28dp"
             android:contentDescription="@string/button_back"
             tools:ignore="RtlSymmetry"
             />
@@ -45,12 +47,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_marginStart="86dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginStart="@dimen/_68dp"
+            android:layout_marginTop="@dimen/_32dp"
             android:text="@string/_1_of_1"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:textSize="24sp">
+            android:textSize="@dimen/_22sp">
 
         </TextView>
 
