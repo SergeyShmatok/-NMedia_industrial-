@@ -5,12 +5,9 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
-        <!-- Те самые настройки (!) -->
-        <item name="android:windowActionBarOverlay">true</item>
         <item name="windowActionBarOverlay">true</item>
-<!--                <item name="android:windowBackground">@color/black</item>-->
 
+        <!--        <item name="android:windowBackground">@color/black</item>-->
         <!--        <item name="android:windowTranslucentStatus">true</item>-->
 
     </style>
@@ -47,7 +44,6 @@
     <style name="ProgressBarColor" parent="ThemeOverlay.AppCompat.Light">
         <item name="color">@color/navy_blue</item>
     </style>
-
 
 
 </resources>

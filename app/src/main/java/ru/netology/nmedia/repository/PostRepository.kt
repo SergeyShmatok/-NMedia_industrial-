@@ -67,6 +67,10 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
         delay(15_000L)
 
             val response = PostApi.retrofitService.getNewer(id)
+
+            println(response.code())
+            println(response.message())
+
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())

@@ -30,7 +30,10 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
         val authViewModel by viewModels<AuthViewModel>()
 
-        // window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//
+//        WindowCompat.setDecorFitsSystemWindows(window, true)
+
 
         requestNotificationsPermission()
 
