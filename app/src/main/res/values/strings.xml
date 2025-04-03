@@ -45,5 +45,6 @@
     <string name="OK">OK</string>
     <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
+    <string name="entry">Login</string>
 
 </resources>

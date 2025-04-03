@@ -40,12 +40,12 @@
     мы наследуем от него всё от Application, и сделаем тот "init" (или что-то ещё). -->
 
 
-
+<!--    android:windowOptOutEdgeToEdgeEnforcement="true"-->
+<!--    tools:targetApi="35"-->
 
     <application
         android:name=".application.App"
         android:label="@string/app_name"
-
         android:allowBackup="true"
         android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher"

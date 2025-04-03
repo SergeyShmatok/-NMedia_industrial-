@@ -5,9 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.adapter.ATTACHMENTS_URL
@@ -29,7 +28,7 @@ class ImageViewingFragment : Fragment() {
     ): View {
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-            (requireActivity() as AppActivity).transparentAppBar(false)
+            (requireActivity() as AppActivity).hideStatusBar(false)
             findNavController().navigateUp()
         }
 
@@ -45,46 +44,30 @@ class ImageViewingFragment : Fragment() {
         binding.viewImage.loadAttachments("$ATTACHMENTS_URL${url}")
 
         binding.backForPicture.setOnClickListener {
+            (requireActivity() as AppActivity).hideStatusBar(false)
             findNavController().navigateUp()
         }
-
 
 
         // Настройка анимации при клике
         binding.apply {
 
-            (requireActivity() as AppActivity).apply {
+                binding.root.setOnClickListener {
 
-                windowInsetsController().systemBarsBehavior =
-                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    if (backForPicture.isVisible) {
+                        backForPicture.visibility = View.INVISIBLE
+                        oneOfOne.visibility = View.INVISIBLE
+                    } else if (backForPicture.isInvisible) {
+                        backForPicture.visibility = View.VISIBLE
+                        oneOfOne.visibility = View.VISIBLE
 
-                ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, windowInsets ->
-                    if (windowInsets.isVisible(WindowInsetsCompat.Type.statusBars()))
-                    {
-                        binding.root.setOnClickListener {
-                            backForPicture.visibility = View.INVISIBLE
-                            oneOfOne.visibility = View.INVISIBLE
-                            windowInsetsController().hide(WindowInsetsCompat.Type.statusBars()) }
-
-                    } else {
-                        binding.root.setOnClickListener {
-                            backForPicture.visibility = View.VISIBLE
-                            oneOfOne.visibility = View.VISIBLE
-                            windowInsetsController().show(WindowInsetsCompat.Type.statusBars()) }
                     }
-
-                    ViewCompat.onApplyWindowInsets(view, windowInsets)
                 }
 
-
-            }
-
+            return binding.root
         }
 
-        return binding.root
     }
-
-
 }
 
 

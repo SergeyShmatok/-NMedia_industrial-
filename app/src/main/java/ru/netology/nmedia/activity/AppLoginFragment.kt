@@ -44,7 +44,7 @@ loginViewModel.loginSuccessful.observe(viewLifecycleOwner) {
 
             hideKeyboard(requireView())
 
-            fun colorSetter(color: Int) = resources.getColor(color)
+            fun colorSetter(color: Int) = resources.getColor(color, null)
 
             val loginLength = binding.logIn.editText?.text.isNullOrBlank()
             val passwordLength = binding.password.editText?.text.isNullOrBlank()

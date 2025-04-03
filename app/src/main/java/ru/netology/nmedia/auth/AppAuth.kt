@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 // передаём контекст, потому что будем работать с преференсами
 class AppAuth private constructor(context: Context) {
 
-    private val pref = context.getSharedPreferences("auth", Context.MODE_PRIVATE) // название и "мод"
+    private val pref =
+        context.getSharedPreferences("auth", Context.MODE_PRIVATE) // название и "мод"
     private val _authState = MutableStateFlow<AuthState?>(null)
     val authState: StateFlow<AuthState?> = _authState.asStateFlow() // преобразование в обычный Flow
 
@@ -31,12 +32,12 @@ class AppAuth private constructor(context: Context) {
     // несколькими потоками монитором экземпляра
     // (или, для статических методов, класса), на котором определен метод (??)
     fun setAuth(userId: Long, token: String) {
-    _authState.value = AuthState(userId, token)
+        _authState.value = AuthState(userId, token)
         pref.edit {
             putString(TOKEN_KEY, token)
             putLong(ID_KEY, userId)
         }
-}
+    }
 
     @Synchronized
     fun removeAuth() {
@@ -46,28 +47,29 @@ class AppAuth private constructor(context: Context) {
     }
 
 
-companion object {
+    companion object {
 
-    private var INSTANCE: AppAuth? = null
+        private var INSTANCE: AppAuth? = null
 
-    private const val TOKEN_KEY = "token"
-    private const val ID_KEY = "id"
+        private const val TOKEN_KEY = "token"
+        private const val ID_KEY = "id"
 
-    fun getInstance(): AppAuth = synchronized(this) {
-        checkNotNull(INSTANCE) {
-            "You must initialize before calling"
-        } // гарантирует, что там нет "null"
+        fun getInstance(): AppAuth = synchronized(this) {
+            checkNotNull(INSTANCE) {
+                "You must initialize before calling"
+            } // гарантирует, что там нет "null"
+
+        }
+
+
+        fun initApp(context: Context) = INSTANCE
+            ?: synchronized(this) { // в качестве "лока" можно использовать companion object
+                // companion обеспечивает постоянность "объекта"
+                INSTANCE ?: AppAuth(context).also { INSTANCE = it }
+
+            }
 
     }
-
-
-    fun initApp(context: Context) = INSTANCE ?: synchronized(this) { // в качестве "лока" можно использовать companion object
-        // companion обеспечивает постоянность "объекта"
-        INSTANCE ?: AppAuth(context).also { INSTANCE = it }
-
-    }
-
-}
 
 }
 

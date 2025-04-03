@@ -12,7 +12,6 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/_20dp"
         android:background="@drawable/photo_rock_1"
         android:gravity="center"
         android:orientation="vertical">
@@ -23,7 +22,7 @@
             android:layout_width="245dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="88dp"
+            android:layout_marginTop="90dp"
             android:hint="@string/login"
             app:boxCornerRadiusBottomEnd="50dp"
             app:endIconMode="password_toggle">
@@ -75,7 +74,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="center|top"
-        android:layout_marginTop="310dp"
+        android:layout_marginTop="282dp"
         android:visibility="invisible" />
 
 <Button

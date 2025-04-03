@@ -8,11 +8,9 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.toColorInt
 import androidx.core.view.MenuProvider
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -32,7 +30,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
         val authViewModel by viewModels<AuthViewModel>()
 
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        // window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 
         requestNotificationsPermission()
 
@@ -103,16 +101,12 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
 //------------------------------------- Системные панели и пр. -----------------------------------
 
-    fun changeStatusBarColor(color: String) {
-            window.statusBarColor = color.toColorInt()
-        }
-
-  fun windowInsetsController() = WindowCompat
+  private fun windowInsetsController() = WindowCompat
         .getInsetsController(window, window.decorView)
 
-    fun transparentAppBar(transparent: Boolean) {
+    fun hideStatusBar(hide: Boolean) {
 
-        if (transparent) {
+        if (hide) {
             windowInsetsController().hide(WindowInsetsCompat.Type.statusBars())
             } else {
             windowInsetsController().show(WindowInsetsCompat.Type.statusBars())

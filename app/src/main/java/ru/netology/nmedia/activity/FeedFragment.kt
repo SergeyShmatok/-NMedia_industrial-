@@ -192,23 +192,21 @@ class FeedFragment : Fragment() {
                 R.id.imageViewingFragment -> {
                     (requireActivity() as AppActivity).apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.black))
-                        changeStatusBarColor(getString(R.color.black))
                         supportActionBar?.hide()
+                        hideStatusBar(true)
                     }
                 }
 
                 R.id.application_login_fragment -> {
                     (requireActivity() as AppActivity).apply {
-                        changeStatusBarColor(getString(R.color.stormy_sky))
                         supportActionBar?.hide()
-                        // windowInsetsController().hide(WindowInsetsCompat.Type.statusBars())
+
                     }
 
                 }
                 else -> {
                     (requireActivity() as AppActivity).apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.colorPrimary))
-                        changeStatusBarColor(getString(R.color.colorPrimaryDark))
                         supportActionBar?.show()
                     }
                 }
@@ -235,15 +233,12 @@ class FeedFragment : Fragment() {
 
         val dialogBuilder = AlertDialog.Builder(requireActivity())
 
-        dialogBuilder.setMessage(
-            phrase +
-                "" +
-                " Хотите войти?")
+        dialogBuilder.setMessage(phrase)
             .setCancelable(false) // Если установить значение false, то пользователь
 //          не сможет закрыть диалоговое окно, например, нажатием в любой точке экрана.
 //          В таком случае пользователь должен нажать одну из предоставленных опций.
 
-            .setPositiveButton(getString(R.string.proceed)) { dialog, _ ->
+            .setPositiveButton(getString(R.string.entry)) { dialog, _ ->
                 findNavController()
                     .navigate(R.id.action_feedFragment_to_application_login_fragment)
                 dialog.cancel()
