@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import ru.netology.nmedia.api_service.PostApi
+import ru.netology.nmedia.api.Api
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
@@ -44,7 +44,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = PostApi.retrofitService.getAll()
+            val response = Api.retrofitService.getAll()
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             val posts = response.body() ?: throw UnknownError
@@ -66,7 +66,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
         while (true) {  // Цикл прерывается вызовом - CancellationException -
         delay(15_000L)
 
-            val response = PostApi.retrofitService.getNewer(id)
+            val response = Api.retrofitService.getNewer(id)
 
             println(response.code())
             println(response.message())
@@ -99,7 +99,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             dao.likeById(id)
         try {
 
-            val response = PostApi.retrofitService.likeById(id)
+            val response = Api.retrofitService.likeById(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -123,7 +123,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             dao.removeLike(id)
         try {
 
-            val response = PostApi.retrofitService.removeLike(id)
+            val response = Api.retrofitService.removeLike(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -152,7 +152,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = PostApi.retrofitService.deletePost(id)
+            val response = Api.retrofitService.deletePost(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -178,7 +178,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = PostApi.retrofitService.save(post)
+            val response = Api.retrofitService.save(post)
 
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
@@ -201,7 +201,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
             val media = upload(file)
 
-            val response = PostApi.retrofitService.save(post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE)))
+            val response = Api.retrofitService.save(post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE)))
 
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
@@ -220,7 +220,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
     }
 
     private suspend fun upload(file: File): Media =
-        PostApi.retrofitService.upload(MultipartBody.Part.createFormData("file", file.name, file.asRequestBody()))
+        Api.retrofitService.upload(MultipartBody.Part.createFormData("file", file.name, file.asRequestBody()))
                                                 // имя сервер будет поставлять своё👆
       // MultipartBody.Part.createFormData — метод, который создаёт экземпляр MultipartBody.Part
       // из библиотеки okhttp3. При использовании этого метода нужно указать имя части (обычно «файл»)
@@ -233,7 +233,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
          try {
 
-             val response = PostApi.retrofitService.updateUser(login, pass)
+             val response = Api.retrofitService.updateUser(login, pass)
 
              if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 

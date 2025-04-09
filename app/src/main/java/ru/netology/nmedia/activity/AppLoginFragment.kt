@@ -28,6 +28,7 @@ class AppLoginFragment: Fragment() {
         val loginViewModel by viewModels<LoginViewModel>()
 
 
+
 loginViewModel.loginSuccessful.observe(viewLifecycleOwner) {
     loginViewModel.toastFun(true)
     findNavController().navigate(R.id.action_application_login_fragment_to_feedFragment)

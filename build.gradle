@@ -1,4 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.kotlin_version = "2.1.10"
+    ext.android_gradle_version = "8.8.2"
+}
+
 plugins {
 
     alias(libs.plugins.android.application) apply false // тут подключается плагин для Android приложений

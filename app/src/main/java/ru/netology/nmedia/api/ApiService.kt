@@ -1,4 +1,4 @@
-package ru.netology.nmedia.api_service
+package ru.netology.nmedia.api
 
 import com.google.gson.JsonObject
 import okhttp3.MultipartBody
@@ -21,6 +21,7 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.PushToken
 
 
 private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
@@ -76,6 +77,19 @@ interface ApiService {
     @Multipart
     @POST("media")
     suspend fun upload(@Part part: MultipartBody.Part): Media
+
+    @POST("users/push-tokens")
+    suspend fun sendPushToken(@Body token: PushToken)
+//     Если код ответа неважен, если нужен только successful (200-299),
+//     можно "Response" не возвращать.
+
+
+
+
+
+
+
+
     // Если важен код ответа, можно использовать Response (обёртку),
     // если нет, то сразу - результат.
 
@@ -87,7 +101,7 @@ interface ApiService {
 }
 
 
-object PostApi {
+object Api {
     val retrofitService by lazy {
         retrofit.create<ApiService>() // Создайте реализацию конечных точек API,
         // определенных интерфейсом службы. Относительный путь для данного метода получается из аннотации к методу,

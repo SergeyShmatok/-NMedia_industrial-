@@ -2,17 +2,25 @@ package ru.netology.nmedia.auth
 
 import android.content.Context
 import androidx.core.content.edit
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import ru.netology.nmedia.api.Api
+import ru.netology.nmedia.dto.PushToken
 
 // передаём контекст, потому что будем работать с преференсами
 class AppAuth private constructor(context: Context) {
 
-    private val pref =
-        context.getSharedPreferences("auth", Context.MODE_PRIVATE) // название и "мод"
+    private val pref = context.getSharedPreferences("auth", Context.MODE_PRIVATE) // название и "мод"
+    // preferences можно получить из любого контекста
     private val _authState = MutableStateFlow<AuthState?>(null)
     val authState: StateFlow<AuthState?> = _authState.asStateFlow() // преобразование в обычный Flow
+
 
     init {
         val id = pref.getLong(ID_KEY, 0L)
@@ -24,8 +32,24 @@ class AppAuth private constructor(context: Context) {
         } else {
             _authState.value = AuthState(id, token)
         }
+        sendPushToken()
+    }
 
 
+    fun sendPushToken(token: String? = null) {
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            try {
+
+            Api.retrofitService.sendPushToken(
+                PushToken(token ?: FirebaseMessaging.getInstance().token.await()) )
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
     }
 
     @Synchronized // означает, что метод будет защищен от одновременного выполнения
@@ -37,13 +61,15 @@ class AppAuth private constructor(context: Context) {
             putString(TOKEN_KEY, token)
             putLong(ID_KEY, userId)
         }
+        sendPushToken()
     }
 
     @Synchronized
     fun removeAuth() {
         _authState.value = null
-        pref.edit { clear() }
-
+        pref.edit {
+            clear() }
+        sendPushToken()
     }
 
 

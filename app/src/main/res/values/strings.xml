@@ -35,6 +35,7 @@
     <string name="sign_up">Sign up</string>
     <string name="sign_in">Sign in</string>
     <string name="edit_hint">Write your post…</string>
+    <string name="notification">Recipient ID: %1$d, content: %2$s</string>
 
     <!-- Strings related to login -->
     <string name="prompt_password">Password</string>

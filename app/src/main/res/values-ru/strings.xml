@@ -36,6 +36,7 @@
     <string name="logout">Выйти</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="sign_in">Войти</string>
+    <string name="notification">ID получателя: %1$d, содержимое: %2$s</string>
     <string name="prompt_password">Пароль</string>
     <string name="action_sign_in">Войти или зарегистрироваться</string>
     <string name="action_sign_in_short">Войти</string>
