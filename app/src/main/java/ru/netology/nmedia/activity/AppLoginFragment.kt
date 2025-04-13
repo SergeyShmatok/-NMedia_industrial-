@@ -7,11 +7,16 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentAppLoginBinding
 import ru.netology.nmedia.util.AndroidUtils.hideKeyboard
+import ru.netology.nmedia.util.viewLifecycle
+import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.LoginViewModel
 
 class AppLoginFragment: Fragment() {
@@ -29,16 +34,19 @@ class AppLoginFragment: Fragment() {
 
 
 
-loginViewModel.loginSuccessful.observe(viewLifecycleOwner) {
+loginViewModel.loginSuccessful.flowWithLifecycle(viewLifecycle).onEach {
     loginViewModel.toastFun(true)
+    loginViewModel.loginSuccessfulIsNull()
     findNavController().navigate(R.id.action_application_login_fragment_to_feedFragment)
 
-}
+}.launchIn(viewLifecycleScope)
 
-        loginViewModel.loginState.observe(viewLifecycleOwner) { stateModel ->
+
+        loginViewModel.loginState.flowWithLifecycle(viewLifecycle).onEach { stateModel ->
             if (stateModel.error) loginViewModel.toastFun()
             binding.loading.isVisible = stateModel.loading
-        }
+
+        }.launchIn(viewLifecycleScope)
 
 
         binding.signInButton.setOnClickListener {

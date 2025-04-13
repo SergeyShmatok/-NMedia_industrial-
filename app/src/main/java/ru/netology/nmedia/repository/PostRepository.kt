@@ -1,9 +1,9 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -32,7 +32,15 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
 //--------------------------------------------------------------------------------------------------
 
-    var newPost = MutableLiveData<List<Post>?>(null)
+    var newPost = MutableStateFlow<List<Post>>(emptyList())
+
+//     private val mutex = Mutex()
+//    Объект👆, который можно использовать для синхронизации (lock'а) (**)
+//    в обращающихся к переменной функциях (если есть несколько)
+//    Например:
+//        mutex.withLock {
+//            newPost.value = null
+//        }
 
     override val data = dao.getAll().map { it.toDto() }.flowOn(Dispatchers.Default)
     // override val data: LiveData<List<Post>> = dao.getAll()
@@ -45,6 +53,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
         try {
 
             val response = Api.retrofitService.getAll()
+
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             val posts = response.body() ?: throw UnknownError
@@ -74,7 +83,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-             newPost.postValue((newPost.value?.plus(body)) ?: body)
+            newPost.value += body
             println(newPost.value)
             emit(body.size) } }
         .catch { e -> throw AppError.from(e) }
@@ -83,14 +92,18 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 //--------------------------------------------------------------------------------------------------
 
     suspend fun addNewPostsToRoom() {
-        newPost.value?.toEntity()?.let { dao.insert(it) }
-        newPost.value = null
+        newPost.value.toEntity().let { dao.insert(it) }
+
+//            mutex.withLock {        (**)
+//            newPost.value = null
+//        }
+        newPost.value = emptyList()
     }
 
 //--------------------------------------------------------------------------------------------------
 
      fun cleanNewPostInRepo() {
-    newPost.postValue(null)
+    newPost.value = emptyList()
      }
 
 //--------------------------------------------------------------------------------------------------

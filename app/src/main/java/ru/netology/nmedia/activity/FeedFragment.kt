@@ -11,15 +11,20 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.ImageViewingFragment.Companion.textArg2
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.util.viewLifecycle
+import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
@@ -83,15 +88,16 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts) // это про передачу постов в рисайклер
-            binding.emptyText.isVisible = state.empty // --//--
-        }
+        viewModel.data.flowWithLifecycle(viewLifecycle).onEach { state ->
+            adapter.submitList(state.posts)
+            binding.emptyText.isVisible = state.empty
 
-        viewModel.dataState.observe(viewLifecycleOwner) { stateModel ->
+        }.launchIn(viewLifecycleScope)
+
+        viewModel.dataState.flowWithLifecycle(viewLifecycle).onEach { stateModel ->
             binding.progress.isVisible =
-                stateModel.loading // а это про отображение элементов на "верхнем" уровне (view), модели mvvm.
-            binding.swiperefresh.isRefreshing = stateModel.refreshing // --//--
+                stateModel.loading
+            binding.swiperefresh.isRefreshing = stateModel.refreshing
             if (stateModel.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.retry_loading) {
@@ -109,19 +115,21 @@ class FeedFragment : Fragment() {
                 viewModel.cleanModel()
             }
 
-        }
+        }.launchIn(viewLifecycleScope)
 
-        viewModel.newerCount.observe(viewLifecycleOwner) {
+        viewModel.newerCount.flowWithLifecycle(viewLifecycle).onEach {
             println(it)
             binding.extendedFab.text = getString(R.string.extended_fab_text)
                 .format("$it")
-        }
 
-        viewModel.newPostData.observe(viewLifecycleOwner) { posts ->
-            binding.extendedFab.isVisible = !posts.isNullOrEmpty()
+        }.launchIn(viewLifecycleScope)
+
+        viewModel.newPostData.flowWithLifecycle(viewLifecycle).onEach { posts ->
+            binding.extendedFab.isVisible = posts?.isNotEmpty() ?: false
             // binding.extendedFab.visibility =
             // if (it.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
-        }
+
+        }.launchIn(viewLifecycleScope)
 
         binding.extendedFab.setOnClickListener {
             viewModel.newPostsIsVisible()
@@ -154,19 +162,17 @@ class FeedFragment : Fragment() {
 
 
                     if (dy > 0) { // Пользователь прокручивает вниз
-                        // binding.appBarLayout.visibility = View.GONE
 
                         (requireActivity() as AppActivity).supportActionBar?.hide()
                         binding.fab.visibility = View.INVISIBLE
                         binding.extendedFab.isVisible = false
 
                     } else { // Пользователь прокручивает вверх
-                        // binding.appBarLayout.visibility = View.VISIBLE
 
                         (requireActivity() as AppActivity).supportActionBar?.show()
                         binding.fab.visibility = View.VISIBLE
                         binding.extendedFab.isVisible =
-                            !viewModel.newPostData.value.isNullOrEmpty()
+                            viewModel.newPostData.value?.isNotEmpty() ?: false
                     }
 
                     super.onScrolled(recyclerView, dx, dy)

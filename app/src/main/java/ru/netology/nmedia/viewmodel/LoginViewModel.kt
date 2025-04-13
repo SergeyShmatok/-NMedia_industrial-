@@ -3,27 +3,34 @@ package ru.netology.nmedia.viewmodel
 import android.app.Application
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.model.LoginModelState
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.util.SingleLiveEvent
 
 
 class LoginViewModel(application: Application): AndroidViewModel(application) {
 
     private val repository = PostRepository(AppDb.getInstance(application).postDao())
 
-    private val _loginSuccessful = SingleLiveEvent<Unit>() // Переход на фрагмент с лентой, когда вход успешен
-    val loginSuccessful: LiveData<Unit>
-        get() = _loginSuccessful
+    private val _loginSuccessful = MutableStateFlow<Unit?>(null) // Переход на фрагмент с лентой, когда вход успешен
+    val loginSuccessful: Flow<Unit>
+        get() = _loginSuccessful.asStateFlow().filterNotNull()
 
-    private val _loginState = MutableLiveData<LoginModelState>()
-    val loginState: LiveData<LoginModelState>
+    fun loginSuccessfulIsNull() {
+        _loginSuccessful.value = null
+    }
+
+
+    private val _loginState = MutableStateFlow(LoginModelState())
+    val loginState: StateFlow<LoginModelState>
         get() = _loginState
 
 

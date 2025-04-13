@@ -4,16 +4,18 @@ import android.app.Application
 import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
@@ -26,7 +28,6 @@ import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
 
 
@@ -48,51 +49,51 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PostRepository(AppDb.getInstance(application).postDao())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _data = AppAuth.getInstance().authState.flatMapLatest { authState ->
+    private val _data: StateFlow<FeedModel> = AppAuth.getInstance().authState.flatMapLatest { authState ->
         repository.data.map { posts->
             FeedModel(
                 posts.map {
                     it.copy(ownedByMe = authState?.userId == it.authorId)
                 }
             )
-        }.catch { e -> throw AppError.from(e)}
-    }
-         // Перехватывает исключения в завершении потока
-        // и вызывает указанное действие с перехваченным исключением.
-        // Этот оператор прозрачен для исключений, которые возникают в нисходящем потоке,
-        // и не перехватывает исключения, которые выбрасываются для отмены потока.
-        .asLiveData(Dispatchers.Default)
+        }.catch { e -> throw AppError.from(e)} // переключить (!)
+//        }.catch { e -> e.printStackTrace() }
 
-    val data: LiveData<FeedModel>
+    }.stateIn(
+        scope = viewModelScope,
+        started = WhileSubscribed(5000),
+        initialValue = FeedModel())
+
+
+    val data: StateFlow<FeedModel>
         get() = _data
 
-    private val _dataState = MutableLiveData<FeedModelState>()
-    val dataState: LiveData<FeedModelState>
+    private val _dataState = MutableStateFlow(FeedModelState())
+    val dataState: StateFlow<FeedModelState>
         get() = _dataState
 
-    private val edited = MutableLiveData(empty)
+    private val edited = MutableStateFlow(empty)
 
-    private val _postCreated = SingleLiveEvent<Unit>()
-    val postCreated: LiveData<Unit>
-        get() = _postCreated
+    private val _postCreated = MutableStateFlow<Unit?>(null)
+    val postCreated: Flow<Unit>
+    get() = _postCreated.asStateFlow().filterNotNull()
 
-    val newerCount = data.switchMap { // Этот механизм можно применять для других задач,
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val newerCount: Flow<Int> = data.flatMapLatest { // Этот механизм можно применять для других задач,
         // например, оповещать в UI о наличии интернета
         // (как-то отображать через элементы интерфейса).
         repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
             .catch {e -> if (e is NetworkError) { cleanNewPost(); println(e)
-                _dataState.postValue(FeedModelState(error = true)) }
+                _dataState.value = FeedModelState(error = true) }
             else throw AppError.from(e) }
-            .asLiveData(Dispatchers.Default)
-
     }
 
     private var _newPostData = repository.newPost
-    val newPostData: LiveData<List<Post>?>
+    val newPostData: StateFlow<List<Post>?>
         get() = _newPostData
 
-    private val _photo = MutableLiveData<PhotoModel?>(null)
-    val photo: LiveData<PhotoModel?>
+    private val _photo = MutableStateFlow<PhotoModel?>(null)
+    val photo: StateFlow<PhotoModel?>
         get() = _photo
 
 
@@ -189,6 +190,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         repository.cleanNewPostInRepo()
     }
 
+    fun postCreatedIsNull() {
+        _postCreated.value = null
+    }
+
 //--------------------------------------------------------------------------------------------------
 
     fun removeById(id: Long) = viewModelScope.launch {
@@ -208,7 +213,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun save() = viewModelScope.launch {
 
         try {
-            edited.value?.let { post ->
+            edited.value.let { post ->
                 _postCreated.value = Unit
                  photo.value?.let {
                     repository.saveWithAttachment(post, it.file)
@@ -253,11 +258,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun changeContent(content: String) {
         val text = content.trim()
-        if (edited.value?.content == text) {
+        if (edited.value.content == text) {
             return
         }
 
-        edited.value = edited.value?.copy(content = text)
+        edited.value = edited.value.copy(content = text)
     }
 }
 

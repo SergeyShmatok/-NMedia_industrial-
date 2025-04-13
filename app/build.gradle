@@ -12,12 +12,12 @@ plugins {
 android {
     namespace "ru.netology.nmedia"
 
-    compileSdk 35
+    compileSdk 35 // определяет, какая версия Android SDK будет использоваться gradle для компиляции приложения
 
     defaultConfig {
         applicationId "ru.netology.nmedia"
         minSdkVersion 23
-        targetSdkVersion 34
+        targetSdkVersion 34 // не может быть выше compileSdk
         versionCode 1
         versionName "1.0"
 

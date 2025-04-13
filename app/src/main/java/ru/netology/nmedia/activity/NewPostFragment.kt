@@ -7,19 +7,24 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.core.net.toFile
 import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.util.StringArg
+import ru.netology.nmedia.util.viewLifecycle
+import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class NewPostFragment : Fragment() {
@@ -73,29 +78,39 @@ class NewPostFragment : Fragment() {
 
 //--------------------------------------------------------------------------------------------------
 
-        viewModel.postCreated.observe(viewLifecycleOwner) {
-            findNavController().navigateUp()
-        }
+        viewModel.postCreated.flowWithLifecycle(viewLifecycle).onEach {
 
-        viewModel.dataState.observe(viewLifecycleOwner) { stateModel ->
+            findNavController().navigateUp()
+            viewModel.postCreatedIsNull() // Чтобы отработал как лайв-ивент (надо "обнулить" значение)
+
+        }.launchIn(viewLifecycleScope)
+
+
+
+        viewModel.dataState.flowWithLifecycle(viewLifecycle).onEach { stateModel ->
             if (!stateModel.postIsAdded) {
                 viewModel.toastFun()
                 viewModel.cleanModel()
             }
-        }
+        }.launchIn(viewLifecycleScope)
 
-        viewModel.photo.observe(viewLifecycleOwner) { photo ->
+
+
+        viewModel.photo.flowWithLifecycle(viewLifecycle).onEach { photo ->
+
             if (photo == null) {
                 binding.previewContainer.isGone = true
-                return@observe
+                return@onEach
             }
 
             binding.previewContainer.isVisible = true
             binding.preview.setImageURI(photo.uri)
-        }
+
+        }.launchIn(viewLifecycleScope)
+
 //--------------------------------------------------------------------------------------------------
 
-        val photoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val photoLauncher = registerForActivityResult(StartActivityForResult()) {
             if (it.resultCode == ImagePicker.RESULT_ERROR) {
                 viewModel.toastFun(pickError = true)
                 return@registerForActivityResult
