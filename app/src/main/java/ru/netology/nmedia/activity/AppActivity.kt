@@ -14,10 +14,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg1
 import ru.netology.nmedia.auth.AppAuth
@@ -66,7 +70,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_auth, menu)
-                authViewModel.state.observe(this@AppActivity) {
+                authViewModel.state.flowWithLifecycle(this@AppActivity.lifecycle).onEach {
+//                authViewModel.state.observe(this@AppActivity) {
 
 
 //                    вернёт id последнего фрагмента (?)
@@ -76,7 +81,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                     menu.setGroupVisible(R.id.authorized, authViewModel.isAuthenticated)
                     menu.setGroupVisible(R.id.unauthorized, !authViewModel.isAuthenticated)
 
-                }
+                }.launchIn(this@AppActivity.lifecycle.coroutineScope)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =

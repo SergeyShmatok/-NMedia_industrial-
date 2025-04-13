@@ -12,5 +12,3 @@ val Fragment.viewLifecycleScope: CoroutineScope
 
 val Fragment.viewLifecycle: Lifecycle
     get() = viewLifecycleOwner.lifecycle
-
-
