@@ -9,13 +9,14 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.adapter.ATTACHMENTS_URL
 import ru.netology.nmedia.databinding.FragmentPictureViewingBinding
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.util.loadAttachments
 
+@AndroidEntryPoint
 class ImageViewingFragment : Fragment() {
-    // private val viewModel: PostViewModel by activityViewModels()
 
     companion object {
         var Bundle.textArg2: String? by StringArg

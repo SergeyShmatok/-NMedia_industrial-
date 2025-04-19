@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import ru.netology.nmedia.api.Api
+import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
@@ -26,13 +26,30 @@ import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import java.io.File
 import java.io.IOException
+import javax.inject.Inject
 
 
-class PostRepository(private val dao: PostDao) : PostRepositoryFun {
+class PostRepository @Inject constructor(
+    private val dao: PostDao,
+    private val apiService: ApiService,
+    ) : PostRepositoryFun {
+
+//    private lateinit var dependency: DependencyContainer
+
+      @Inject
+      lateinit var appAuth: AppAuth
+
+//       @Synchronized
+//       private fun isInitialized() {
+//
+//           dependency = if (::dependency.isInitialized) dependency
+//           else DependencyContainer.getInstance()
+//
+//       }
 
 //--------------------------------------------------------------------------------------------------
 
-    var newPost = MutableStateFlow<List<Post>>(emptyList())
+    override var newPost = MutableStateFlow<List<Post>>(emptyList())
 
 //     private val mutex = Mutex()
 //    Объект👆, который можно использовать для синхронизации (lock'а) (**)
@@ -52,7 +69,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = Api.retrofitService.getAll()
+            val response = apiService.getAll()
 
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
@@ -75,7 +92,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
         while (true) {  // Цикл прерывается вызовом - CancellationException -
         delay(15_000L)
 
-            val response = Api.retrofitService.getNewer(id)
+            val response = apiService.getNewer(id)
 
             println(response.code())
             println(response.message())
@@ -91,7 +108,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
 //--------------------------------------------------------------------------------------------------
 
-    suspend fun addNewPostsToRoom() {
+    override suspend fun addNewPostsToRoom() {
         newPost.value.toEntity().let { dao.insert(it) }
 
 //            mutex.withLock {        (**)
@@ -102,7 +119,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
 //--------------------------------------------------------------------------------------------------
 
-     fun cleanNewPostInRepo() {
+     override fun cleanNewPostInRepo() {
     newPost.value = emptyList()
      }
 
@@ -112,7 +129,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             dao.likeById(id)
         try {
 
-            val response = Api.retrofitService.likeById(id)
+            val response = apiService.likeById(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -136,7 +153,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
             dao.removeLike(id)
         try {
 
-            val response = Api.retrofitService.removeLike(id)
+            val response = apiService.removeLike(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -165,7 +182,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = Api.retrofitService.deletePost(id)
+            val response = apiService.deletePost(id)
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
             response.body() ?: throw UnknownError
@@ -191,7 +208,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
         try {
 
-            val response = Api.retrofitService.save(post)
+            val response = apiService.save(post)
 
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
@@ -214,7 +231,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
             val media = upload(file)
 
-            val response = Api.retrofitService.save(post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE)))
+            val response = apiService.save(post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE)))
 
             if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
@@ -233,7 +250,7 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
     }
 
     private suspend fun upload(file: File): Media =
-        Api.retrofitService.upload(MultipartBody.Part.createFormData("file", file.name, file.asRequestBody()))
+        apiService.upload(MultipartBody.Part.createFormData("file", file.name, file.asRequestBody()))
                                                 // имя сервер будет поставлять своё👆
       // MultipartBody.Part.createFormData — метод, который создаёт экземпляр MultipartBody.Part
       // из библиотеки okhttp3. При использовании этого метода нужно указать имя части (обычно «файл»)
@@ -246,13 +263,15 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
 
          try {
 
-             val response = Api.retrofitService.updateUser(login, pass)
+             val response = apiService.updateUser(login, pass)
 
              if (!response.isSuccessful) throw ApiError(response.code(), response.message())
 
              val body = response.body() ?: throw UnknownError
 
-             AppAuth.getInstance().setAuth(body.get("id").asLong, body.get("token").asString)
+//             isInitialized()
+
+             appAuth.setAuth(body.get("id").asLong, body.get("token").asString)
 
          } catch (e: IOException) {
              throw NetworkError
@@ -263,10 +282,6 @@ class PostRepository(private val dao: PostDao) : PostRepositoryFun {
          }
 
      }
-
-
-
-
 
 
 }

@@ -1,10 +1,11 @@
 package ru.netology.nmedia.viewmodel
 
-import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
@@ -27,8 +27,9 @@ import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
-import ru.netology.nmedia.repository.PostRepository
+import ru.netology.nmedia.repository.PostRepositoryFun
 import java.io.File
+import javax.inject.Inject
 
 
 private val empty = Post(
@@ -44,12 +45,17 @@ private val empty = Post(
 )
 
 // @Deprecated(message = "Не использовать", replaceWith = ReplaceWith...) (Из вебинара)
-class PostViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class PostViewModel @Inject constructor (
+    private val repository: PostRepositoryFun,
+    private val appAuth: AppAuth,
+    private val applicationContext: Context,
 
-    private val repository = PostRepository(AppDb.getInstance(application).postDao())
+    ) : ViewModel() {
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _data: StateFlow<FeedModel> = AppAuth.getInstance().authState.flatMapLatest { authState ->
+    private val _data: StateFlow<FeedModel> = appAuth.authState.flatMapLatest { authState ->
         repository.data.map { posts->
             FeedModel(
                 posts.map {
@@ -231,7 +237,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 //--------------------------------------------------------------------------------------------------
 
-    fun toastFun(refreshing: Boolean = false, pickError: Boolean = false ) {
+    fun toastFun(refreshing: Boolean = false, pickError: Boolean = false) {
         val refreshedPhrase = "Data Refreshed"
         val pickErrorPhrase = "Photo pick error"
         val phrase = listOf(
@@ -247,7 +253,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 pickError -> pickErrorPhrase
                 else -> randomPhrase
         }
-        Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
+        Toast.makeText(applicationContext, text, Toast.LENGTH_LONG).show()
     }
 
 //--------------------------------------------------------------------------------------------------

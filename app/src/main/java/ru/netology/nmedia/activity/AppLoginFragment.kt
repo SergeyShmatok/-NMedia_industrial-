@@ -10,17 +10,20 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentAppLoginBinding
+import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.util.AndroidUtils.hideKeyboard
 import ru.netology.nmedia.util.viewLifecycle
 import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.LoginViewModel
 
-class AppLoginFragment: Fragment() {
 
+@AndroidEntryPoint
+class AppLoginFragment: Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,8 +34,6 @@ class AppLoginFragment: Fragment() {
         val binding = FragmentAppLoginBinding.inflate(inflater, container, false)
 
         val loginViewModel by viewModels<LoginViewModel>()
-
-
 
 loginViewModel.loginSuccessful.flowWithLifecycle(viewLifecycle).onEach {
     loginViewModel.toastFun(true)
@@ -69,7 +70,16 @@ loginViewModel.loginSuccessful.flowWithLifecycle(viewLifecycle).onEach {
 
                 val pass = binding.password.editText?.text?.trim().toString()
 
+            try {
+
                 loginViewModel.checkingUserLogin(login, pass)
+
+            } catch (e: ApiError) {
+
+                if (e.status == 404) loginViewModel
+                    .toastFun(invalidInput = true)
+
+            }
 
 
         }

@@ -20,9 +20,9 @@ import java.io.IOException
 }
 
 class ApiError(val status: Int, code: String) : AppError(code)
-object NetworkError : AppError("error_network")
-object DbError : AppError("error_db")
-object UnknownError : AppError("error_unknown")
+data object NetworkError : AppError("error_network")
+data object DbError : AppError("error_db")
+data object UnknownError : AppError("error_unknown")
 
 
 //--------------------------------------------------------------------------------------------------

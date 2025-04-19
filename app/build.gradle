@@ -3,9 +3,9 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.kapt)
     alias(libs.plugins.google.gms.google.services)
-    // Add the Google services Gradle plugin
-    id 'com.google.devtools.ksp'
 
+    id 'com.google.devtools.ksp'
+    id 'com.google.dagger.hilt.android'
 }
 
 
@@ -32,6 +32,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -81,7 +82,9 @@ dependencies {
     implementation libs.androidx.navigation.fragment.ktx
     implementation libs.androidx.navigation.ui.ktx
     implementation libs.room.runtime
+
     ksp libs.androidx.room.compiler.v250
+
     implementation platform(libs.google.firebase.bom)
     implementation libs.google.firebase.messaging.ktx
     implementation libs.okhttp
@@ -100,6 +103,16 @@ dependencies {
     // https://github.com/Dhaval2404/ImagePicker?ysclid=m8g9g88lo0376724479
     // чтобы при сборке проекта gradle смог найти эту зависимость
     implementation libs.play.services.base
+    coreLibraryDesugaring libs.desugar.jdk.libs
+
+
+    implementation libs.hilt.android.v2561
+
+    kapt libs.hilt.compiler
+    kapt libs.hilt.android.compiler
+    kapt libs.androidx.hilt.compiler
+    implementation libs.androidx.hilt.navigation.compose
+    implementation libs.hilt.android.v2561
 
 
     testImplementation libs.junit

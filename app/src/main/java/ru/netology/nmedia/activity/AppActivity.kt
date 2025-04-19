@@ -20,23 +20,33 @@ import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg1
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class AppActivity: AppCompatActivity(R.layout.activity_app) {
 
 
-class AppActivity : AppCompatActivity(R.layout.activity_app) {
+    @Inject
+    lateinit var appAuth: AppAuth
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+
+    val authViewModel by viewModels<AuthViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val authViewModel by viewModels<AuthViewModel>()
-
-//        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//
-//        WindowCompat.setDecorFitsSystemWindows(window, true)
 
 
         requestNotificationsPermission()
@@ -91,13 +101,11 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                         findNavController(R.id.nav_host_fragment)
                             .navigate(R.id.application_login_fragment)
 
-//                         имитация авторизации student'а
-//                         AppAuth.getInstance().setAuth(5, "x-token")
                         true
                     }
 
                     R.id.logout -> {
-                        AppAuth.getInstance().removeAuth()
+                        appAuth.removeAuth()
                         true
                     }
 
@@ -140,7 +148,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
 
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with
@@ -153,7 +161,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .show()
         }
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+        firebaseMessaging.token.addOnSuccessListener {
             println(it)
         }
     }

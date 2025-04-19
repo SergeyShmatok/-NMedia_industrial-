@@ -15,6 +15,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
@@ -28,12 +29,21 @@ import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
-
+@AndroidEntryPoint
 class FeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by activityViewModels()
 
     private val authViewModel by viewModels<AuthViewModel>()
+
+    lateinit var appActivity: AppActivity
+
+    private fun isInitialized() {
+
+        appActivity = if (::appActivity.isInitialized) appActivity
+        else (requireActivity() as AppActivity)
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -106,12 +116,12 @@ class FeedFragment : Fragment() {
             }
 
             if (stateModel.likeError) {
-                viewModel.toastFun()
+                 viewModel.toastFun()
                 viewModel.cleanModel()
             }
 
             if (!stateModel.postIsDeleted) {
-                viewModel.toastFun()
+                 viewModel.toastFun()
                 viewModel.cleanModel()
             }
 
@@ -162,14 +172,14 @@ class FeedFragment : Fragment() {
 
 
                     if (dy > 0) { // Пользователь прокручивает вниз
-
-                        (requireActivity() as AppActivity).supportActionBar?.hide()
+                        isInitialized()
+                        appActivity.supportActionBar?.hide()
                         binding.fab.visibility = View.INVISIBLE
                         binding.extendedFab.isVisible = false
 
                     } else { // Пользователь прокручивает вверх
-
-                        (requireActivity() as AppActivity).supportActionBar?.show()
+                        isInitialized()
+                        appActivity.supportActionBar?.show()
                         binding.fab.visibility = View.VISIBLE
                         binding.extendedFab.isVisible =
                             viewModel.newPostData.value?.isNotEmpty() ?: false
@@ -196,7 +206,8 @@ class FeedFragment : Fragment() {
         findNavController().addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.imageViewingFragment -> {
-                    (requireActivity() as AppActivity).apply {
+                    isInitialized()
+                    appActivity.apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.black))
                         supportActionBar?.hide()
                         hideStatusBar(true)
@@ -204,14 +215,16 @@ class FeedFragment : Fragment() {
                 }
 
                 R.id.application_login_fragment -> {
-                    (requireActivity() as AppActivity).apply {
+                    isInitialized()
+                    appActivity.apply {
                         supportActionBar?.hide()
 
                     }
 
                 }
                 else -> {
-                    (requireActivity() as AppActivity).apply {
+                    isInitialized()
+                    appActivity.apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.colorPrimary))
                         supportActionBar?.show()
                     }

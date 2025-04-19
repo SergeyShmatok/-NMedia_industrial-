@@ -1,19 +1,13 @@
 package ru.netology.nmedia.application
 
 import android.app.Application
-import ru.netology.nmedia.auth.AppAuth
+import dagger.hilt.android.HiltAndroidApp
 
 
 // Тут инициализация AppAuth с созданием собственной реализации Application.
 
-class App: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        AppAuth.initApp(this)
-
-    }
-}
-
+@HiltAndroidApp
+class App: Application()
 
 // "Вы можете предоставить собственную реализацию, создав подкласс
 // и указав полное имя этого подкласса в качестве "android:name"атрибута

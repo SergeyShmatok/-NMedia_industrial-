@@ -17,6 +17,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.netology.nmedia.R
@@ -27,12 +28,15 @@ import ru.netology.nmedia.util.viewLifecycle
 import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.PostViewModel
 
+@AndroidEntryPoint
 class NewPostFragment : Fragment() {
 
     companion object {
         var Bundle.textArg1: String? by StringArg
         const val MAX_PHOTO_SIZE_PX = 2048
     }
+
+    // private val dependency: DependencyContainer = DependencyContainer.getInstance()
 
     private val viewModel: PostViewModel by activityViewModels()
 
@@ -110,20 +114,20 @@ class NewPostFragment : Fragment() {
 
 //--------------------------------------------------------------------------------------------------
 
-        val photoLauncher = registerForActivityResult(StartActivityForResult()) {
-            if (it.resultCode == ImagePicker.RESULT_ERROR) {
+        val photoLauncher = registerForActivityResult(StartActivityForResult()) {result ->
+            if (result.resultCode == ImagePicker.RESULT_ERROR) {
                 viewModel.toastFun(pickError = true)
                 return@registerForActivityResult
             }
 
-         val result = it.data?.data ?: return@registerForActivityResult // если код ответа не ошибка,
+         val uri = result.data?.data ?: return@registerForActivityResult // если код ответа не ошибка,
              // то (всё равно) что-то должно сохраниться.
 
              // Метод getData() позволяет получить данные, с которыми работает намерение. Возвращает URI
              // (универсальный идентификатор ресурса) данных, на которые направлено намерение,
              // или значение null.
 
-            viewModel.changePhoto(result, result.toFile())
+            viewModel.changePhoto(uri, uri.toFile())
                 // toFile() создаёт файл из указанного Uri. Обратите внимание, что это вызовет исключение
                 // IllegalArgumentException при вызове на Uri, в котором отсутствует схема файла.
         }
