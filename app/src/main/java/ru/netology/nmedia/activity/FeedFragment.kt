@@ -68,12 +68,10 @@ class FeedFragment : Fragment() {
 
             override fun onLike(post: Post) {
 
-                    if (authViewModel.isAuthenticated) {
+                if (authViewModel.isAuthenticated) {
                     if (!post.likedByMe) viewModel.likeById(post.id)
                     else viewModel.removeLike(post.id)
-                }
-
-                else {
+                } else {
                     dialogBuilder(forLikes = true)
                 }
             }
@@ -98,21 +96,21 @@ class FeedFragment : Fragment() {
 
             override fun openPhoto(post: Post) {
 
-                findNavController().navigate(R.id.action_feedFragment_to_imageViewingFragment,
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_imageViewingFragment,
                     Bundle().apply { textArg2 = post.attachment?.url })
             }
 
         })
-
         binding.list.adapter = adapter
 
-            viewModel.data.flowWithLifecycle(viewLifecycle).onEach { pagingData ->
-                adapter.submitData(pagingData)
-                binding.emptyText.isVisible = adapter.itemCount == 0
+
+        viewModel.data.flowWithLifecycle(viewLifecycle).onEach { pagingData ->
+            adapter.submitData(pagingData)
+            binding.emptyText.isVisible = adapter.itemCount == 0
 
 
-
-            }.launchIn(viewLifecycleScope)
+        }.launchIn(viewLifecycleScope)
 
 
         viewModel.dataState.flowWithLifecycle(viewLifecycle).onEach { stateModel ->
@@ -126,12 +124,12 @@ class FeedFragment : Fragment() {
             }
 
             if (stateModel.likeError) {
-                 viewModel.toastFun()
+                viewModel.toastFun()
                 viewModel.cleanModel()
             }
 
             if (!stateModel.postIsDeleted) {
-                 viewModel.toastFun()
+                viewModel.toastFun()
                 viewModel.cleanModel()
             }
 
@@ -169,16 +167,15 @@ class FeedFragment : Fragment() {
 //        }
 
 
-
         viewLifecycleOwner.lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
-            adapter.loadStateFlow.collectLatest {
-                binding.swiperefresh.isRefreshing = it.refresh is LoadState.Loading
+                adapter.loadStateFlow.collectLatest {
+                    binding.swiperefresh.isRefreshing = it.refresh is LoadState.Loading
                             || it.prepend is LoadState.Loading
                             || it.append is LoadState.Loading
 
-                // Показ "рефреша" при изменении состояний загрузки PagingData
-            }
+                    // Показ "рефреша" при изменении состояний загрузки PagingData
+                }
             }
         }
 
@@ -263,6 +260,7 @@ class FeedFragment : Fragment() {
                     }
 
                 }
+
                 else -> {
                     takeAppActivity().apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.colorPrimary))
@@ -275,14 +273,14 @@ class FeedFragment : Fragment() {
     }
 
 
-
     fun dialogBuilder(forPosts: Boolean = false, forLikes: Boolean = false) {
 
         val writePosts = "Чтобы иметь возможность писать посты, войдите в NMedia."
 
         val putLikes = "Чтобы иметь возможность ставить лайки, войдите в NMedia."
 
-        val standardPhrase = "Чтобы иметь возможность пользоваться всеми функциями, войдите в NMedia."
+        val standardPhrase =
+            "Чтобы иметь возможность пользоваться всеми функциями, войдите в NMedia."
 
         val phrase = when {
             forPosts -> writePosts
