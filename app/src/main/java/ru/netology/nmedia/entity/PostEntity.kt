@@ -19,6 +19,7 @@ data class PostEntity(
     @Embedded // Вместо Embedded раньше писали конвертер для встроенного класса.
     // Так же, можно было просто добавить новые поля из встраиваемого класса, но так компактнее.
     var attachment: AttachmentEmbedded? = null, // Для Attachment (всего, что связанно с базой данных)
+    val ownedByMe: Boolean = false,
     // принято создавать отдельные сущности, поэтому появился "AttachmentEmbedded".
 ) {
 
@@ -31,7 +32,8 @@ data class PostEntity(
         likedByMe = likedByMe,
         likes = likes,
         authorAvatar = authorAvatar,
-        attachment = attachment?.toDto()
+        attachment = attachment?.toDto(),
+        ownedByMe = ownedByMe,
     ) // По сути, функция просто возвращает инстанс Post
     // и инициализирует его поля полями своего класса (экземпляра).
     // Хорошая практика в связке с функциями (**) расширения👇
@@ -50,6 +52,7 @@ data class PostEntity(
                 attachment = dto.attachment
                     ?.let(AttachmentEmbedded::fromDto),
                 // ?.let(AttachmentEmbedded.fromDto(it))
+                ownedByMe = dto.ownedByMe,
             )
     }
 
@@ -59,7 +62,6 @@ fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto) // (**)
 // fun List<PostEntity>.toDto(): List<Post> = map { it.toDto() } - или так
 
 fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)
-
 
 //--------------------------------------------------------------------------------------------------
 //                                      - Второй вариант -

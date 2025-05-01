@@ -58,8 +58,13 @@ class AppAuth @Inject constructor (
 
             try {
 
-                val pushToken = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
-                val entryPoint = EntryPointAccessors.fromApplication(context, AppAuthEntryPoint::class.java)
+                val pushToken = PushToken(token ?:
+                FirebaseMessaging.getInstance().token.await())
+                // Возвращает интерфейс точки входа из приложения. Контекст может быть любым
+                // контекстом, полученным из контекста приложения. Может использоваться только
+                // с интерфейсами точки входа, установленными в SingletonComponent.
+                val entryPoint = EntryPointAccessors
+                    .fromApplication(context, AppAuthEntryPoint::class.java)
                 entryPoint.getApiService().sendPushToken(pushToken)
 
             } catch (e: Exception) {

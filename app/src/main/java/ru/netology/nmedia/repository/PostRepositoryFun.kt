@@ -1,12 +1,13 @@
 package ru.netology.nmedia.repository
 
+import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.netology.nmedia.dto.Post
 import java.io.File
 
 interface PostRepositoryFun {
-    val data: Flow<List<Post>>
+    val data: Flow<PagingData<Post>>
     var newPost: MutableStateFlow<List<Post>>
 
     suspend fun getAll()

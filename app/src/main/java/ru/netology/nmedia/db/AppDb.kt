@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.entity.PostEntity
 
-@Database(entities = [PostEntity::class], version = 3, exportSchema = true)
+@Database(entities = [PostEntity::class], version = 4, exportSchema = true)
 // При изменении таблицы (добавление новых колонок)
 // нужно изменять версию и устанавливать миграцию (**)
 // либо заходить в приложение и всё чистить. Иначе получим exception при запуске.

@@ -11,13 +11,19 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.ImageViewingFragment.Companion.textArg2
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -38,10 +44,12 @@ class FeedFragment : Fragment() {
 
     lateinit var appActivity: AppActivity
 
-    private fun isInitialized() {
+    private fun takeAppActivity(): AppActivity {
 
         appActivity = if (::appActivity.isInitialized) appActivity
         else (requireActivity() as AppActivity)
+
+        return appActivity
 
     }
 
@@ -98,15 +106,17 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-        viewModel.data.flowWithLifecycle(viewLifecycle).onEach { state ->
-            adapter.submitList(state.posts)
-            binding.emptyText.isVisible = state.empty
+            viewModel.data.flowWithLifecycle(viewLifecycle).onEach { pagingData ->
+                adapter.submitData(pagingData)
+                binding.emptyText.isVisible = adapter.itemCount == 0
 
-        }.launchIn(viewLifecycleScope)
+
+
+            }.launchIn(viewLifecycleScope)
+
 
         viewModel.dataState.flowWithLifecycle(viewLifecycle).onEach { stateModel ->
-            binding.progress.isVisible =
-                stateModel.loading
+            binding.progress.isVisible = stateModel.loading
             binding.swiperefresh.isRefreshing = stateModel.refreshing
             if (stateModel.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_INDEFINITE)
@@ -127,12 +137,7 @@ class FeedFragment : Fragment() {
 
         }.launchIn(viewLifecycleScope)
 
-        viewModel.newerCount.flowWithLifecycle(viewLifecycle).onEach {
-            println(it)
-            binding.extendedFab.text = getString(R.string.extended_fab_text)
-                .format("$it")
 
-        }.launchIn(viewLifecycleScope)
 
         viewModel.newPostData.flowWithLifecycle(viewLifecycle).onEach { posts ->
             binding.extendedFab.isVisible = posts?.isNotEmpty() ?: false
@@ -147,10 +152,48 @@ class FeedFragment : Fragment() {
 
         }
 
+
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            adapter.loadStateFlow.collect {
+//
+//                viewModel.newerCount(
+//                    adapter.snapshot().items.firstOrNull()?.id ?: 0L
+//                )
+//                    .flowWithLifecycle(viewLifecycle).onEach { count ->
+//                        println(count)
+//                        binding.extendedFab.text = getString(R.string.extended_fab_text)
+//                            .format("$count")
+//                    }.launchIn(viewLifecycleScope)
+//            }
+//
+//        }
+
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+            adapter.loadStateFlow.collectLatest {
+                binding.swiperefresh.isRefreshing = it.refresh is LoadState.Loading
+                            || it.prepend is LoadState.Loading
+                            || it.append is LoadState.Loading
+
+                // Показ "рефреша" при изменении состояний загрузки PagingData
+            }
+            }
+        }
+
+
+        authViewModel.state.flowWithLifecycle(viewLifecycle).onEach {
+            adapter.refresh() // Обновление списка при (раз)авторизации
+
+        }.launchIn(viewLifecycleScope)
+
+
         binding.swiperefresh.setOnRefreshListener {
             viewModel.toastFun(true)
             viewModel.cleanNewPost()
-            viewModel.refreshing()
+            // viewModel.refreshing()
+            adapter.refresh()
             binding.list.smoothScrollToPosition(0)
         }
 
@@ -172,14 +215,14 @@ class FeedFragment : Fragment() {
 
 
                     if (dy > 0) { // Пользователь прокручивает вниз
-                        isInitialized()
-                        appActivity.supportActionBar?.hide()
+
+                        takeAppActivity().supportActionBar?.hide()
                         binding.fab.visibility = View.INVISIBLE
                         binding.extendedFab.isVisible = false
 
                     } else { // Пользователь прокручивает вверх
-                        isInitialized()
-                        appActivity.supportActionBar?.show()
+
+                        takeAppActivity().supportActionBar?.show()
                         binding.fab.visibility = View.VISIBLE
                         binding.extendedFab.isVisible =
                             viewModel.newPostData.value?.isNotEmpty() ?: false
@@ -206,8 +249,7 @@ class FeedFragment : Fragment() {
         findNavController().addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.imageViewingFragment -> {
-                    isInitialized()
-                    appActivity.apply {
+                    takeAppActivity().apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.black))
                         supportActionBar?.hide()
                         hideStatusBar(true)
@@ -215,16 +257,14 @@ class FeedFragment : Fragment() {
                 }
 
                 R.id.application_login_fragment -> {
-                    isInitialized()
-                    appActivity.apply {
+                    takeAppActivity().apply {
                         supportActionBar?.hide()
 
                     }
 
                 }
                 else -> {
-                    isInitialized()
-                    appActivity.apply {
+                    takeAppActivity().apply {
                         supportActionBar?.setBackgroundDrawable(colorSetter(R.color.colorPrimary))
                         supportActionBar?.show()
                     }
