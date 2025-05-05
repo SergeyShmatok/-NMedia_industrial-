@@ -13,7 +13,7 @@ class AuthViewModel @Inject constructor (
     ): ViewModel() { // ViewModel для проверки авторизации (ViewModel сохраняет данные)
 
     val state: StateFlow<AuthState?> = appAuth // представим подписку как LiveData
-        .authState // получаем инстанс и доступ к его полю
+        .authState
 
         val isAuthenticated: Boolean
             get() = appAuth.authState.value != null // проверка на вход в приложение

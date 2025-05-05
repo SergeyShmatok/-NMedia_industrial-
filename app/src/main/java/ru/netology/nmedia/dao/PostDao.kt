@@ -12,6 +12,12 @@ interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
 
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC LIMIT :limit")
+    suspend fun getLatest(limit: Int): List<PostEntity>
+
+    @Query("SELECT * FROM PostEntity WHERE id < :id ORDER BY id DESC LIMIT :limit")
+    suspend fun getBefore(id: Long, limit: Int): List<PostEntity>
+
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     suspend fun getSimpleList(): List<PostEntity>
 

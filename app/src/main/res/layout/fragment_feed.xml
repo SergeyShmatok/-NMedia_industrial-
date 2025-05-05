@@ -19,7 +19,7 @@
         android:focusable="true"
         android:text="@string/extended_fab_text"
         android:textAllCaps="false"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:icon="@drawable/baseline_arrow_upward_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

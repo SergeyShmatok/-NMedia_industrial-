@@ -7,7 +7,8 @@ import ru.netology.nmedia.dto.Post
 import java.io.File
 
 interface PostRepositoryFun {
-    val data: Flow<PagingData<Post>>
+    val data: Flow<List<Post>>
+    val pagingDate: Flow<PagingData<Post>>
     var newPost: MutableStateFlow<List<Post>>
 
     suspend fun getAll()

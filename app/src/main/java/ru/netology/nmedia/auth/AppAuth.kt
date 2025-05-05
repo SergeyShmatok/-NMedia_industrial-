@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import ru.netology.nmedia.api.ApiService
@@ -29,8 +28,7 @@ class AppAuth @Inject constructor (
     private val pref = context.getSharedPreferences("auth", Context.MODE_PRIVATE) // название и "мод"
     // preferences можно получить из любого контекста
 
-    private val _authState = MutableStateFlow<AuthState?>(null)
-    val authState: StateFlow<AuthState?> = _authState.asStateFlow() // преобразование в обычный Flow
+    private var _authState = MutableStateFlow<AuthState?>(null)
 
     init {
         val id = pref.getLong(idKey, 0L)
@@ -38,12 +36,13 @@ class AppAuth @Inject constructor (
 
         if (id == 0L || token == null) {
             pref.edit { clear() }
-
         } else {
             _authState.value = AuthState(id, token)
         }
         sendPushToken()
     }
+
+    val authState: StateFlow<AuthState?> = _authState // преобразование в обычный Flow
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint

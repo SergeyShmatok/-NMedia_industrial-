@@ -2,10 +2,11 @@ package ru.netology.nmedia.repository
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import retrofit2.HttpException
+import kotlinx.coroutines.delay
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.toDto
 import java.io.IOException
 import javax.inject.Inject
 
@@ -15,20 +16,22 @@ class PostPagingSource @Inject constructor(
     private val dao: PostDao
 ) : PagingSource<Long, Post>() {
 
+    private var lastId: Long = 0
+
     override fun getRefreshKey(state: PagingState<Long, Post>): Long? = null // Нужна для обновления
     // данных по определённому ключу (тут использоваться не будет).
 
     override suspend fun load(params: LoadParams<Long>): LoadResult<Long, Post> { // LoadParams - sealed класс.
 
         try {
-            val result = when (params) {
 
-                is LoadParams.Refresh -> apiService.getLatest(params.loadSize)
+            val list = when (params) {
+
+                is LoadParams.Refresh -> {
+                    delay(7000) // Задержка, чтобы успеть загрузить данные в Room с сервера (5 сек)
+                    dao.getLatest(params.loadSize)}
                 // Пользователь "скроллит вниз".
-                is LoadParams.Append -> apiService.getBefore(
-                    id = params.key,
-                    count = params.loadSize,
-                )
+                is LoadParams.Append -> dao.getBefore(lastId, params.loadSize)
 
                 // Пользователь "скроллит вверх".
                 is LoadParams.Prepend -> return LoadResult.Page(
@@ -47,16 +50,16 @@ class PostPagingSource @Inject constructor(
                 // больше данных, в противном случае null.
 
 
-            }
+            }.toDto()
 
-            if (!result.isSuccessful)  throw HttpException(result)
+//            if (!result.isSuccessful)  throw HttpException(result)
 
-            val data = result.body().orEmpty()
+            lastId = list.lastOrNull()?.id ?: 0L
 
             return LoadResult.Page(
-                data = data,
+                data = list,
                 prevKey = params.key,
-                nextKey = data.lastOrNull()?.id
+                nextKey = list.lastOrNull()?.id
             )
         } catch (e: IOException) {
             return LoadResult.Error(e)

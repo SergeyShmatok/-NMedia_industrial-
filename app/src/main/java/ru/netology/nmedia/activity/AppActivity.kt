@@ -81,14 +81,9 @@ class AppActivity: AppCompatActivity(R.layout.activity_app) {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_auth, menu)
                 authViewModel.state.flowWithLifecycle(this@AppActivity.lifecycle).onEach {
-//                authViewModel.state.observe(this@AppActivity) {
 
 
-//                    вернёт id последнего фрагмента (?)
-//                    val lastFragmentId =
-//                        supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.first()?.id
-
-                    menu.setGroupVisible(R.id.authorized, authViewModel.isAuthenticated)
+                menu.setGroupVisible(R.id.authorized, authViewModel.isAuthenticated)
                     menu.setGroupVisible(R.id.unauthorized, !authViewModel.isAuthenticated)
 
                 }.launchIn(this@AppActivity.lifecycle.coroutineScope)
