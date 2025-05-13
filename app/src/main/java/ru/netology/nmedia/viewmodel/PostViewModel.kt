@@ -12,22 +12,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
-import ru.netology.nmedia.error.DbError
 import ru.netology.nmedia.error.NetworkError
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepositoryFun
@@ -51,9 +45,7 @@ private val empty = Post(
 @HiltViewModel
 class PostViewModel @Inject constructor (
     private val repository: PostRepositoryFun,
-    private val appAuth: AppAuth,
     private val applicationContext: Context,
-
     ) : ViewModel() {
 
         private val _pagingDate: Flow<PagingData<Post>> =
@@ -65,19 +57,19 @@ class PostViewModel @Inject constructor (
     val pagingData: Flow<PagingData<Post>>
         get() = _pagingDate
 
-    private val _data: StateFlow<FeedModel> =
-        repository.data.map { posts->
-            FeedModel(
-                posts.map { it }
-            )
-        }.catch { e -> throw AppError.from(e)}
-            .stateIn(
-        scope = viewModelScope,
-        started = WhileSubscribed(5000),
-            initialValue = FeedModel())
-
-    val data: StateFlow<FeedModel>
-        get() = _data
+//    private val _data: StateFlow<FeedModel> =
+//        repository.data.map { posts->
+//            FeedModel(
+//                posts.map { it }
+//            )
+//        }.catch { e -> throw AppError.from(e)}
+//            .stateIn(
+//        scope = viewModelScope,
+//        started = WhileSubscribed(5000),
+//            initialValue = FeedModel())
+//
+//    val data: StateFlow<FeedModel>
+//        get() = _data
 
     private val _dataState = MutableStateFlow(FeedModelState())
     val dataState: StateFlow<FeedModelState>
@@ -89,18 +81,18 @@ class PostViewModel @Inject constructor (
     val postCreated: Flow<Unit>
         get() = _postCreated.asStateFlow().filterNotNull()
 
+    private val newerData = repository.newerCountData
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _newerCount = data.flatMapLatest { // Этот механизм можно применять для других задач,
-        // например, оповещать в UI о наличии интернета
-        // (как-то отображать через элементы интерфейса).
-        repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
+    private val _newerCount: StateFlow<Any> = newerData.flatMapLatest {
+        repository.getNewerCount(it ?: 0L)
             .catch { e ->
                 if (e is NetworkError) {
                     cleanNewPost(); println(e)
                     _dataState.value = FeedModelState(error = true)
                 } else throw AppError.from(e)
             }
-    } .stateIn(
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
         false)
@@ -120,7 +112,7 @@ class PostViewModel @Inject constructor (
 
 //--------------------------------------------------------------------------------------------------
 
-    init { loadPosts() }
+//    init { loadPosts() }
 
 //--------------------------------------------------------------------------------------------------
 
@@ -134,31 +126,31 @@ class PostViewModel @Inject constructor (
 
 //--------------------------------------------------------------------------------------------------
 
-    fun loadPosts(refreshed: Boolean = false) = viewModelScope.launch {
-
-        // viewModelScope описана на главном потоке (Dispatchers.Main.immediate),
-        // но асинхронно с ним самим. "Корутины — это потоки исполнения кода,
-        // которые организуются поверх системных потоков".
-        // _data.value = (FeedModel(loading = true))
-
-        val state = if (refreshed) FeedModelState(refreshing = true)
-        else FeedModelState(loading = true)
-
-        try {
-            _dataState.value = state
-            repository.getAll()
-            _dataState.value = FeedModelState()
-        } catch (e: Exception) {
-            _dataState.value = FeedModelState(error = true)
-            if (e is AppError) when (e) {
-                is ApiError -> {} // Можно поставить разные "флаги" на разные ошибки
-                is NetworkError -> {} // --//--
-                is DbError -> {}
-                else -> {} // --//--
-
-            }
-        }
-    }
+//    fun loadPosts(refreshed: Boolean = false) = viewModelScope.launch {
+//
+//        // viewModelScope описана на главном потоке (Dispatchers.Main.immediate),
+//        // но асинхронно с ним самим. "Корутины — это потоки исполнения кода,
+//        // которые организуются поверх системных потоков".
+//        // _data.value = (FeedModel(loading = true))
+//
+//        val state = if (refreshed) FeedModelState(refreshing = true)
+//        else FeedModelState(loading = true)
+//
+//        try {
+//            _dataState.value = state
+//            repository.getAll()
+//            _dataState.value = FeedModelState()
+//        } catch (e: Exception) {
+//            _dataState.value = FeedModelState(error = true)
+//            if (e is AppError) when (e) {
+//                is ApiError -> {} // Можно поставить разные "флаги" на разные ошибки
+//                is NetworkError -> {} // --//--
+//                is DbError -> {}
+//                else -> {} // --//--
+//
+//            }
+//        }
+//    }
 //--------------------------------------------------------------------------------------------------
 
    fun newPostsIsVisible() = viewModelScope.launch {
@@ -167,10 +159,10 @@ class PostViewModel @Inject constructor (
 
 //--------------------------------------------------------------------------------------------------
 
-    fun refreshing() {
-        loadPosts(true)
-
-    }
+//    fun refreshing() {
+//        loadPosts(true)
+//
+//    }
 
 //--------------------------------------------------------------------------------------------------
 

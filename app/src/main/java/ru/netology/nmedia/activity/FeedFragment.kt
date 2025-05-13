@@ -29,17 +29,25 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.ImageViewingFragment.Companion.textArg2
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
+import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostRemoteKeyEntity
 import ru.netology.nmedia.util.viewLifecycle
 import ru.netology.nmedia.util.viewLifecycleScope
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class FeedFragment : Fragment(
+class FeedFragment: Fragment() {
 
-) {
+    @Inject
+    lateinit var dao: PostDao
+
+    @Inject
+    lateinit var remoteKeyDao: PostRemoteKeyDao
 
     private val viewModel: PostViewModel by activityViewModels()
 
@@ -109,6 +117,7 @@ class FeedFragment : Fragment(
 
 
         viewModel.pagingData.flowWithLifecycle(viewLifecycle).onEach { pagingData ->
+
             adapter.submitData(pagingData)
 
         }.launchIn(viewLifecycleScope)
@@ -120,7 +129,7 @@ class FeedFragment : Fragment(
             if (stateModel.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.retry_loading) {
-                        viewModel.loadPosts()
+                        adapter.refresh()
                     }.show()
             }
             if (stateModel.likeError) {
@@ -136,53 +145,52 @@ class FeedFragment : Fragment(
 
         viewModel.newerCount.flowWithLifecycle(viewLifecycle).onEach {
             println("Новые посты: $it")
-
-            binding.extendedFab.text = getString(R.string.extended_fab_text)
+            binding.newerPostsFab.text = getString(R.string.extended_fab_text)
                 .format("$it")
         }.launchIn(viewLifecycleScope)
 
 
         viewModel.newPostData.flowWithLifecycle(viewLifecycle).onEach { posts ->
-            binding.extendedFab.isVisible = !posts.isNullOrEmpty()
+            binding.newerPostsFab.isVisible = !posts.isNullOrEmpty()
 
         }.launchIn(viewLifecycleScope)
 
-        binding.extendedFab.setOnClickListener {
+        binding.newerPostsFab.setOnClickListener {
             viewModel.newPostsIsVisible()
-            adapter.refresh()
             binding.list.smoothScrollToPosition(0)
 
+            viewLifecycleOwner.lifecycleScope.launch {
+                remoteKeyDao.insert(
+                    PostRemoteKeyEntity(
+                        PostRemoteKeyEntity.KeyType.AFTER,
+                        dao.takeLastId(),
+                    )
+                )
+
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                adapter.loadStateFlow.collectLatest { loadState ->
-                    if (loadState.source.refresh is LoadState.NotLoading)
-                        binding.emptyText.isVisible = adapter.itemCount < 1
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.loadStateFlow.collectLatest { state ->
+                    binding.swiperefresh.isRefreshing =
+                        state.refresh is LoadState.Loading ||
+                                state.prepend is LoadState.Loading ||
+                                state.append is LoadState.Loading
 
-//                    binding.swiperefresh.isRefreshing =
-//                               it.refresh is LoadState.Loading
-//                            || it.prepend is LoadState.Loading
-//                            || it.append is LoadState.Loading
-                        // Показ "рефреша" при изменении состояний загрузки PagingData
+//                    if (state.refresh is LoadState.Loading && state.append is LoadState.NotLoading)
+//                        delay(5000)
+//                    binding.list.smoothScrollToPosition(0)
+
                 }
             }
         }
 
 
 
-        viewModel.newPostData.flowWithLifecycle(viewLifecycle).onEach { posts ->
-            binding.extendedFab.isVisible = !posts.isNullOrEmpty()
-
-        }.launchIn(viewLifecycleScope)
-
-
         authViewModel.state.flowWithLifecycle(viewLifecycle).onEach {
-
-            viewModel.loadPosts(false)
-            adapter.refresh() // Обновление списка при раз/авторизации
-            delay(8000)
-            viewModel.cleanNewPost()
+            // Обновление списка при раз/авторизации
+            adapter.refresh()
 
         }.launchIn(viewLifecycleScope)
 
@@ -190,9 +198,11 @@ class FeedFragment : Fragment(
         binding.swiperefresh.setOnRefreshListener {
             viewModel.toastFun(true)
             viewModel.cleanNewPost()
-            viewModel.refreshing()
             adapter.refresh()
-            binding.list.smoothScrollToPosition(0)
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(5300)
+                binding.list.smoothScrollToPosition(0)
+            }
         }
 
 
@@ -216,13 +226,13 @@ class FeedFragment : Fragment(
 
                         takeAppActivity().supportActionBar?.hide()
                         binding.fab.visibility = View.INVISIBLE
-                        binding.extendedFab.isVisible = false
+                        binding.newerPostsFab.isVisible = false
 
                     } else { // Пользователь прокручивает вверх
 
                         takeAppActivity().supportActionBar?.show()
                         binding.fab.visibility = View.VISIBLE
-                        binding.extendedFab.isVisible =
+                        binding.newerPostsFab.isVisible =
                             viewModel.newPostData.value?.isNotEmpty() ?: false
                     }
 

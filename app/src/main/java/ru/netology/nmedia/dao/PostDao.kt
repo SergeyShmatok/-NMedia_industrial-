@@ -1,5 +1,6 @@
 package ru.netology.nmedia.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -10,13 +11,16 @@ import ru.netology.nmedia.entity.PostEntity
 @Dao
 interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    fun getPagingSource(): PagingSource<Int, PostEntity>
+
+    @Query("SELECT max(`id`) FROM PostEntity")
+     fun getLastId(): Flow<Long?>
+
+     @Query("SELECT max(`id`) FROM PostEntity")
+     suspend fun takeLastId(): Long
+
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
-
-    @Query("SELECT * FROM PostEntity ORDER BY id DESC LIMIT :limit")
-    suspend fun getLatest(limit: Int): List<PostEntity>
-
-    @Query("SELECT * FROM PostEntity WHERE id < :id ORDER BY id DESC LIMIT :limit")
-    suspend fun getBefore(id: Long, limit: Int): List<PostEntity>
 
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     suspend fun getSimpleList(): List<PostEntity>
@@ -47,9 +51,12 @@ interface PostDao {
     )
     suspend fun removeLike(id: Long)
 
-
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
+
+    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
+    suspend fun isEmpty(): Boolean
+
 }
 
 //--------------------------------------------------------------------------------------------------

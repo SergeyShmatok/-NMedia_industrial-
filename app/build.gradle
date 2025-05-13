@@ -105,7 +105,6 @@ dependencies {
     implementation libs.play.services.base
     coreLibraryDesugaring libs.desugar.jdk.libs
 
-
     implementation libs.hilt.android.v2561
 
     kapt libs.hilt.compiler
@@ -115,8 +114,10 @@ dependencies {
     implementation libs.hilt.android.v2561
 
     implementation libs.androidx.paging.runtime.ktx
-
+    implementation libs.androidx.room.paging
+    
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
+
 }
